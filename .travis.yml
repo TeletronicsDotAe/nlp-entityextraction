@@ -1,0 +1,6 @@
+#test execution script.
+language: scala
+jdk:
+  - oraclejdk8
+scala:
+  - 2.11.5
