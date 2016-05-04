@@ -19,8 +19,8 @@ object TestCaseReader {
   val miscB = "B-MISC"
   val miscI = "I-MISC"
   val other = "O"
-
   val legalAnnotations = List(persB, persI, locB, locI, orgB, orgI, miscB, miscI, other)
+  val sentenceSplitter = "."
 
   private def makeSentence(words: List[AnnotatedWord]): String = {
     words.map(_.word)
@@ -72,8 +72,15 @@ object TestCaseReader {
     def makePredicate: (List[String]) => (AnnotatedWord) => Boolean = (words) => (aw) => words.contains(aw.annotation)
     val persons = contiguousGroups(sentence, makePredicate(List(persB, persI)))
     val locations = contiguousGroups(sentence, makePredicate(List(locB, locI)))
-    val organizations = contiguousGroups(sentence, makePredicate(List(locB, locI)))
-    def mkString: List[AnnotatedWord] => String = (aws) => aws.map(_.word).foldLeft(new StringBuilder)((acc: StringBuilder, word: String) => acc.append(" ").append(word)).toString.trim
+    val organizations = contiguousGroups(sentence, makePredicate(List(orgB, orgI)))
+    def mkString(aws: List[AnnotatedWord]): String = {
+      aws.map(_.word).foldLeft(new StringBuilder)((acc: StringBuilder, word: String) => {
+        word match {
+          case sentenceSplitter => acc.append(word)
+          case _ => acc.append(" ").append(word)
+        }
+      }).toString.trim
+    }
     TestCase(mkString(sentence), persons.map(mkString), locations.map(mkString), organizations.map(mkString))
   }
 

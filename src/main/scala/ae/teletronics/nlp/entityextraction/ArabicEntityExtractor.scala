@@ -14,12 +14,13 @@ import gate.util.persistence.PersistenceManager
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
-object ArabicEntityExtractor extends EntityExtractor {
+class ArabicEntityExtractor(excludeListPersister: ExcludeListPersister) extends EntityExtractor {
 
-  Gate.runInSandbox(true)
-  Gate.init()
+  def this() = this(new DefaultExcludeListPersister)
 
-  val annie: CorpusController = PersistenceManager.loadObjectFromFile(new java.io.File("src/main/resources/plugins/Lang_Arabic/resources/arabic.gapp")).asInstanceOf[CorpusController]
+  import ArabicEntityExtractor._
+
+  val annie: CorpusController = PersistenceManager.loadObjectFromFile(new java.io.File(defaultModelName)).asInstanceOf[CorpusController]
 
   override def recognize(text: String): java.util.Map[String, java.util.List[String]] = {
 
@@ -33,6 +34,8 @@ object ArabicEntityExtractor extends EntityExtractor {
 
   private def extractEntities(annotations: AnnotationSet, text: String): java.util.Map[String, java.util.List[String]] = {
 
+    val excludes = excludeListPersister.getExcludeList
+
     val entities: Iterable[Annotation] = annotations.get(Set[String](EntityType.Person, EntityType.Location, EntityType.GeoPoliticalEntity, EntityType.Organization)).toIterable
 
     def getEntity(entity: Annotation): String = {
@@ -41,8 +44,15 @@ object ArabicEntityExtractor extends EntityExtractor {
 
     val ret: java.util.Map[String, java.util.List[String]] = entities.map(e => e.getType -> getEntity(e))
       .groupBy(_._1)
-      .map { case (k, v) => (k, v.map(_._2).toList.asJava) }
+      .map { case (k, v) => (k, v.map(_._2).filter(e => !excludes.contains(e)).toList.asJava) }
 
     ret
   }
+}
+
+object ArabicEntityExtractor {
+  Gate.runInSandbox(true)
+  Gate.init()
+
+  val defaultModelName = "src/main/resources/plugins/Lang_Arabic/resources/arabic.gapp"
 }
