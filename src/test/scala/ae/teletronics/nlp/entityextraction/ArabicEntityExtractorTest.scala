@@ -186,7 +186,7 @@ class ArabicEntityExtractorTest {
 
     printStats("Persons", correctPersons, resultPersons)
     printStats("Locations", correctLocations, resultLocations)
-    printStats("Organizaitons", correctOrganizations, resultOrganizations)
+    printStats("Organizatons", correctOrganizations, resultOrganizations)
     printStats("All entities", allCorrectEntities, allResultEntities)
 
     assertThat(0, is(0))
