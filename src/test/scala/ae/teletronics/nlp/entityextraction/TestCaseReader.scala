@@ -22,11 +22,6 @@ object TestCaseReader {
   val legalAnnotations = List(persB, persI, locB, locI, orgB, orgI, miscB, miscI, other)
   val sentenceSplitter = "."
 
-  private def makeSentence(words: List[AnnotatedWord]): String = {
-    words.map(_.word)
-         .fold("")((acc: String, word: String) => acc + " " + word)
-  }
-
   private def getParts(line: String): List[String] = {
     line.split("\\s")
         .map(_.trim)
@@ -63,7 +58,7 @@ object TestCaseReader {
     if (words.isEmpty)
       List[List[AnnotatedWord]]()
     else {
-      val (sentence, rest) = spanInclusive(words, (aw) => aw.word == ".")
+      val (sentence, rest) = spanInclusive(words, (aw) => aw.word == sentenceSplitter)
       sentence :: makeSentences(rest)
     }
   }
@@ -76,7 +71,8 @@ object TestCaseReader {
     def mkString(aws: List[AnnotatedWord]): String = {
       aws.map(_.word).foldLeft(new StringBuilder)((acc: StringBuilder, word: String) => {
         word match {
-          case sentenceSplitter => acc.append(word)
+          // backticks to provide a stable identifier for the pattern match, otherwise the pattern will just match anything.
+          case `sentenceSplitter` => acc.append(word)
           case _ => acc.append(" ").append(word)
         }
       }).toString.trim
