@@ -12,6 +12,8 @@ object TestCaseReader {
 
   val persB = "B-PERS"
   val persI = "I-PERS"
+  val perB = "B-PER"
+  val perI = "I-PER"
   val locB  = "B-LOC"
   val locI  = "I-LOC"
   val orgB  = "B-ORG"
@@ -19,7 +21,8 @@ object TestCaseReader {
   val miscB = "B-MISC"
   val miscI = "I-MISC"
   val other = "O"
-  val legalAnnotations = List(persB, persI, locB, locI, orgB, orgI, miscB, miscI, other)
+
+  val legalAnnotations = List(persB, persI, perB, perI, locB, locI, orgB, orgI, miscB, miscI, other)
   val sentenceSplitter = "."
 
   private def getParts(line: String): List[String] = {
@@ -32,7 +35,7 @@ object TestCaseReader {
   // look at eg. line 77231 in ANERCorp.txt for an example of an unparseable line. We skip those
   private def isParseable(line: String): Boolean = {
     val parts = getParts(line)
-    parts.length == 2 && legalAnnotations.contains(parts(1))
+    parts.length == 2 //&& legalAnnotations.contains(parts(1))
   }
 
   // precondition: isParseable(line)
@@ -65,7 +68,7 @@ object TestCaseReader {
 
   private def makeTestCase(sentence: List[AnnotatedWord]): TestCase = {
     def makePredicate: (List[String]) => (AnnotatedWord) => Boolean = (words) => (aw) => words.contains(aw.annotation)
-    val persons = contiguousGroups(sentence, makePredicate(List(persB, persI)))
+    val persons = contiguousGroups(sentence, makePredicate(List(persB, persI, perB, perI)))
     val locations = contiguousGroups(sentence, makePredicate(List(locB, locI)))
     val organizations = contiguousGroups(sentence, makePredicate(List(orgB, orgI)))
     def mkString(aws: List[AnnotatedWord]): String = {
@@ -91,8 +94,16 @@ object TestCaseReader {
     }
   }
 
-  def readTestCases: List[TestCase] = {
+  def readANERCorpTestCases: List[TestCase] = {
     val lines = Source.fromFile("src/test/resources/ANERCorp.txt").getLines
+//    val lines = Source.fromFile("src/test/resources/AQMAR_Arabic_NER_corpus-1.0.txt").getLines
+    val annotatedLines = lines.filter(isParseable).map(parseAnnotation).toList
+    val sentences: List[List[AnnotatedWord]] = makeSentences(annotatedLines)
+    sentences.map(makeTestCase)
+  }
+
+  def readAQMARCorpTestCases: List[TestCase] = {
+    val lines = Source.fromFile("src/test/resources/AQMAR_Arabic_NER_corpus-1.0.txt").getLines
     val annotatedLines = lines.filter(isParseable).map(parseAnnotation).toList
     val sentences: List[List[AnnotatedWord]] = makeSentences(annotatedLines)
     sentences.map(makeTestCase)

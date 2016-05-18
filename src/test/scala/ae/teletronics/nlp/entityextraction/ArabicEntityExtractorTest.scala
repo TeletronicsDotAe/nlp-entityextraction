@@ -101,7 +101,8 @@ class ArabicEntityExtractorTest {
   @Test
   def testPrecisionAndAccuracy() = {
     val subj = new ArabicEntityExtractor
-    val testcases = TestCaseReader.readTestCases
+//    val testcases = TestCaseReader.readANERCorpTestCases
+    val testcases = TestCaseReader.readAQMARCorpTestCases
     val results = testcases.map(tc => subj.recognize(tc.sentence)).toArray
 
     def isCorrect(tpl: (TestCase, java.util.Map[String, java.util.List[String]])): Boolean = {
@@ -142,9 +143,22 @@ class ArabicEntityExtractorTest {
       println("  found organizations:   " + organizations.toString)
     }
 
+    case class CustomEqualsString(val string: String) {
+      override def toString  = string
+      override def hashCode = string.hashCode
+      override def equals(o: Any) = o match {
+        case that: CustomEqualsString => {
+          val thoseWords = that.string.split(' ').toSet
+          val theseWords = this.string.split(' ').toSet
+          theseWords.intersect(thoseWords).nonEmpty
+        }
+        case _ => false
+      }
+    }
+
     println("++++++++++++++++++++ END examples ++++++++++++++++++++++++++++++")
 
-    def printStats(headline: String, correctEntities: List[Set[String]], resultEntities: List[Set[String]]): Unit = {
+    def printStats(headline: String, correctEntities: List[Set[CustomEqualsString]], resultEntities: List[Set[CustomEqualsString]]): Unit = {
       val entityTuples = correctEntities.zip(resultEntities)
       val correctResultEntities = entityTuples.map(tpl => tpl._1.intersect(tpl._2))
       val correctEntitiesCount = correctEntities.map(s => s.size).sum
@@ -171,15 +185,14 @@ class ArabicEntityExtractorTest {
       println("precision: " + (correctResultEntitiesCount.toDouble / resultEntitiesCount))
     }
 
+    val correctPersons = testcases.map(tc => tc.persons.map(CustomEqualsString).toSet)
+    val resultPersons = results.map(r => r(EntityType.Person).map(CustomEqualsString).toSet).toList
 
-    val correctPersons = testcases.map(tc => tc.persons.toSet)
-    val resultPersons = results.map(r => r(EntityType.Person).toSet).toList
+    val correctLocations = testcases.map(tc => tc.locations.map(CustomEqualsString).toSet)
+    val resultLocations = results.map(r => r(EntityType.Location).map(CustomEqualsString).toSet).toList
 
-    val correctLocations = testcases.map(tc => tc.locations.toSet)
-    val resultLocations = results.map(r => r(EntityType.Location).toSet).toList
-
-    val correctOrganizations = testcases.map(tc => tc.organizations.toSet)
-    val resultOrganizations = results.map(r => r(EntityType.Organization).toSet).toList
+    val correctOrganizations = testcases.map(tc => tc.organizations.map(CustomEqualsString).toSet)
+    val resultOrganizations = results.map(r => r(EntityType.Organization).map(CustomEqualsString).toSet).toList
 
     val allCorrectEntities = correctPersons ++ correctLocations ++ correctOrganizations
     val allResultEntities = resultPersons ++ resultLocations ++ resultOrganizations
