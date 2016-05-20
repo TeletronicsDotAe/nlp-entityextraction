@@ -36,6 +36,8 @@ class EngLearner {
           .map(f => LabeledPoint(asDouble(isSender(f, t.tagName, t.tagPos)), f.features))
           .foreach(lp => writer.write(lp.label + "," + spaceSeparated(lp.features) + "\n"))
       })
+    writer.flush()
+    writer.close()
 
     // Split data into training (60%) and test (40%).
     val data = sc.textFile(sparkInputFileName)
