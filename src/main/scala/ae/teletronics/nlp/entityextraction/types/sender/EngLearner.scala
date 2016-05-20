@@ -18,10 +18,8 @@ import scala.xml.{Node, XML}
   */
 class EngLearner {
   private val tokenizer = SimpleTokenizer.INSTANCE
-    val conf = new SparkConf().setAppName("Simple Application").setMaster("local")
-    val sc = new SparkContext(conf)
-
-  def spaceSeparated(features: Vector): String = features.toArray.foldLeft(""){case (acc, value) => acc + " " + value}
+  val conf = new SparkConf().setAppName("Simple Application").setMaster("local")
+  val sc = new SparkContext(conf)
 
   def learn() = {
     // create input file
@@ -33,7 +31,7 @@ class EngLearner {
           .iterator.sliding(2)
           .zipWithIndex
           .map { case (terms, index) => asFeature(terms(1), index, terms(0)) }
-          .map(f => LabeledPoint(asDouble(isSender(f, t.tagName, t.tagPos)), f.features))
+          .map(f => LabeledPoint(asDouble(isSender(f, t.s, t.sPos)), f.features))
           .foreach(lp => writer.write(lp.label + "," + spaceSeparated(lp.features) + "\n"))
       })
     writer.flush()
@@ -57,6 +55,9 @@ class EngLearner {
     val accuracy = 1.0 * predictionAndLabel.filter(x => x._1 == x._2).count() / test.count()
   }
 
+  private def spaceSeparated(features: Vector): String =
+    features.toArray.foldLeft("") { case (acc, value) => acc + " " + value }
+
   private def asFeature(term: String, pos: Int, previousTerm: String): SenderFeature = {
     SenderFeature(term, term(0).isUpper, pos, util.Arrays.hashCode(previousTerm.getBytes).abs)
   }
@@ -71,14 +72,22 @@ class EngLearner {
       .map(fromXml)
   }
 
+  def extract(node: Node, tagName: String) = {
+    val name = (node \\ tagName \ "@name").text
+    val pos = (node \\ tagName \ "@position").text
+
+    val nameValue = if (name.isEmpty) None else Some(name)
+    val posValue = if (pos.isEmpty) -1 else pos.toInt
+
+    (nameValue, posValue)
+  }
+
   private def fromXml(node: Node) = {
     val content = (node \\ "content").text
-    val senderNameValue = (node \\ "sender" \ "@name").text
-    val senderPosValue = (node \\ "sender" \ "@position").text
-    val senderName = if (senderNameValue.isEmpty) None else Some(senderNameValue)
-    val senderPos = if (senderPosValue.isEmpty) -1 else senderPosValue.toInt
+    val (sender, pos) = extract(node, "sender")
+    val (receiver, receiverPos) = extract(node, "receiver")
 
-    TrainMessage(content, senderName, senderPos)
+    TrainMessage(content, receiver, receiverPos, sender, pos)
   }
 
 }
