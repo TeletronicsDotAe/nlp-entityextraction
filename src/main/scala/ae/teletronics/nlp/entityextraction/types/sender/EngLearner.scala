@@ -26,22 +26,22 @@ class EngLearner {
   def learn() = {
     // create input file
     val sparkInputFileName = "target/spark-messages.txt"
-//    val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sparkInputFileName)))
-//    readMessages()
-//      .foreach(t => {
-//        tokenizer.tokenize("." + t.content)
-//          .iterator.sliding(2)
-//          .zipWithIndex
-//          .map { case (terms, index) => asFeature(terms(1), index, terms(0)) }
-//          .map(f => LabeledPoint(asDouble(isSender(f, t.tagName, t.tagPos)), f.features))
-//          .foreach(lp => writer.write(lp.label + "," + spaceSeparated(lp.features) + "\n"))
-//      })
+    val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sparkInputFileName)))
+    readMessages()
+      .foreach(t => {
+        tokenizer.tokenize("." + t.content)
+          .iterator.sliding(2)
+          .zipWithIndex
+          .map { case (terms, index) => asFeature(terms(1), index, terms(0)) }
+          .map(f => LabeledPoint(asDouble(isSender(f, t.tagName, t.tagPos)), f.features))
+          .foreach(lp => writer.write(lp.label + "," + spaceSeparated(lp.features) + "\n"))
+      })
 
     // Split data into training (60%) and test (40%).
     val data = sc.textFile(sparkInputFileName)
     val parsedData = data.map { line =>
       val parts = line.split(',')
-      LabeledPoint(parts(0).toDouble, Vectors.dense(parts(1).split(' ').map(_.toDouble)))
+      LabeledPoint(parts(0).toDouble, Vectors.dense(parts(1).trim().split(' ').map(_.toDouble)))
     }
 
     // Split data into training (60%) and test (40%).
@@ -56,7 +56,7 @@ class EngLearner {
   }
 
   private def asFeature(term: String, pos: Int, previousTerm: String): SenderFeature = {
-    SenderFeature(term, term(0).isUpper, pos, util.Arrays.hashCode(previousTerm.getBytes))
+    SenderFeature(term, term(0).isUpper, pos, util.Arrays.hashCode(previousTerm.getBytes).abs)
   }
 
   private def isSender(f: SenderFeature, sender: Option[String], senderPos: Int) = {
