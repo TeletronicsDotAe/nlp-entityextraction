@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<messages>
+	<message>
+		<listname>Tika</listname><content>Apache Tika now requires Java 7 or higher. Apache Commons Email only requires Java 5. From the look of it, your JVM (IBM WebSphere?) doesn't support Java 7. You'll need to upgrade your JVM to Java 7 + to use recent versions of Tika Nick</content><sender name="Nick" position="55"/>
+	</message>
+	<message>
+		<listname>Tika</listname><content>Hey Team, Thamme and I added a wiki page for Tika/Stanford NER and Apache OpenNLP integration: http://wiki.apache.org/tika/TikaAndNER Cheers, Chris P.S. Nick - Git instructions coming next :)</content><sender name="Chris" position="34" />
+	</message>
+	<message>
+		<listname>Tika</listname><content>Woot! :) Nick</content><sender name="Nick" position="4" />
+	</message>
+	<message>
+		<listname>Tika</listname><content>Hi Chris, Nice work generally. I love this kind of thing hence why I love GATE which uses both Stanford toolkits and Tika as well :) On Fri, Nov 20, 2015 at 8:37 AM, &lt;[EMAIL PROTECTED]&gt; wrote: Some interesting results... particularly on the CoreNLP NER results shown in the wiki page. As I've noticed before, lots of false positives within organization recognition. Looks like a rule based approach would align these. Wiki page is really helpful to understand extent and functionality available within Tika now. Excellent work folks. Lewis</content><sender name="Lewis" position="110" /><receiver name="Chris" position="1" />
+	</message>
+	<message>
+		<listname>Tika</listname><content>Thank you, Chris and Thamme! I've downloaded the necessary models manually, and all is working...but it might annoy others.</content>
+	</message>
+	<message>
+		<listname>Tika</listname><content>Gotcha Tim, OK that helps. Thamme, can you try and test this behind a proxy so that we can try and replicate what Tim is seeing? As for packaging the models, Stanford NER may be difficult to do that, not only b/c of the license (GPLv3 [1], which is why we did it as a runtime dependency, and optional, since we also did Apache OpenNLP), but b/c of the size of the models. Apache OpenNLP models are there and freely available, but no Maven packaging exists for them. We’ll get this figured out Tim. Cheers, Chris</content><sender name="Chris" position="121" /><receiver name="Tim" position="1" />
+	</message>
+	<message>
+		<listname>Tika</listname><content>Hey Tim, Why shouldn’t we have to worry about connectivity outside of the Maven stuff? I mean clearly, if I install Tika on a new system today without a Maven repo, I must be connected to the internet, right? Cheers, Chris</content><sender name="Chris" position="49" /><receiver name="Tim" position="1" />
+	</message>
+	<message>
+		<listname>Tika</listname><content>Hey Team, I propose we move to writeable git repos for Tika for our repository. I mostly interact with Git &amp; Github nowadays even with Tika using the mirroring and PR interaction support. Thoughts? Cheers, Chris</content><sender name="Chris" position="40" />
+	</message>
+	<message>
+		<listname>Tika</listname><content>Thanks Bob. We don’t always have to do patches right now in Tika. Use CTR if it’s a new area of the code base, and/or if you feel reasonable about it being a small enough change to go ahead. Use RTC If you’d like a review and your peers to look at it - if it’s a long standing area of the code base, etc etc. So either way is fine with me and yes, we’d be moving into that type of workflow. I don’t see getting rid of JIRA though - for example this workflow:</content><receiver name="Bob" position="1" />
+	</message>
+	<message>
+		<listname>Tika</listname><content>Chris, This makes sense to me.  I think with git there's a lot of different ways to do things so I think as long as we have a documented way of getting patches from the community that's what's important.  Thanks! - Bob</content><sender name="Bob" position="51" /><receiver name="Chris" position="0" />
+	</message>
+	<message>
+		<listname>Tika</listname><content>I'm -0 on this at the moment Having followed other Apache lists, it seems that there's quite a few ways to use Git, not all of them compatible with the Apache way, and some of them easy to do wrong. Were we to have some proposed guidelines/information/rules on using Git for Tika, such as about what branches squashing might be permitted on, rules for that, information/rules on remote branches, how to handle / when to use / not-use private branches and github branches, and the like, then I'd be minded to change my vote I'm also wondering how it would work with the website pulling in bits of the Tika Examples module from SVN for the examples page? That currently uses a svn:externals, so we can keep the code in a normal module + unit test it, then pulls in snippets, how would that work if the code moved to  git? Nick</content><sender name="Nick" position="185" />
+	</message>
+	<message>
+		<listname>Mahout</listname><content>Hello Mahout Users! I use today Mahout - Recommenditembased with Log-similarity to produce personal recommendations for Trigger Eamils in a offline mode. But when I produce e.g. 50 recommendations the rank value of the recommendations are always of magnitude 1. Why is this so? And, is the first recommendations in this list the best one or is there some randomness in this list? Best regards, Niklas Ekvall</content><sender name="Niklas Ekvall" position="77" />
+	</message>
+	<message>
+		<listname>Mahout</listname><content>Sounds like you may not have the input right. Recommendations should be sorted by the strength and so shouldn’t all be 1 unless the data is very odd. Can you give us a small sample of the input? BTW a newer recommender using Mahout’s Spark based code and a search engine is here: https://github.com/PredictionIO/template-scala-parallel-universal-recommendation a single machine install script is here: https://docs.prediction.io/start/</content>
+	</message>
+	<message>
+		<listname>Mahout</listname><content>Do your ids start with 0 and cover all numbers between 0 and the number of items -1 (same for user ids)? The old hadoop-mahout code required ordinal ids starting at 0</content>
+	</message>
+	<message>
+		<listname>Mahout</listname><content>No, it does not start from 0 and does not cover all number between 0 and the number of items/users. We do a prefiltering before (a user must have bought at lest 5 product and a product must have been  bought by 3 users) we use Mahout on the dataset. Therefore we start with user 3, then it jumps to user 5, etc. Is this wrong? Should we use all data as input to Mahout and do the filtring inside Mahout? We use the second latest version of Mahout! Best regards, Niklas</content><sender name="Niklas" position="105" />
+	</message>
+	<message>
+		<listname>Mahout</listname><content>I wouldn’t pre-filter but in any case the ids input to hadoop-mahout need to follow those rules. The new recommender I mentioned has no such requirements, it uses string IDs.</content>
+	</message>
+	<message>
+		<listname>Mahout</listname><content>Okay! No pre-filter and the user/item ids should start from 0 and go as many user and items there are. So, all the data we have should go into Mahout and we filter inside Mahout....correct? We do the same pre-filter for Spark item-similarity, is that wrong to? Best regards, Niklas</content><sender name="Niklas" position="66" />
+	</message>
+	<message>
+		<listname>Mahout</listname><content>Yes, but I wouldn't filter. The recs will very likely be better than random with only a small number of events. No, spark-itemsimilarity uses string ids.</content>
+	</message>
+	<message>
+		<listname>Mahout</listname><content>Hi, I have been using mahout for running a user based recommendation. My data has 1M users and 3M associations. I want to write the output of the recommender object to a file and using a long primitive iterator takes lot of time. I want to know is there a way to write all recommendations to a file efficiently. Regards, Gughan Raj S | +91-9500022771</content><sender name="Gughan Raj S" position="68" />
+	</message>
+	<message>
+		<listname>Mahout</listname><content>The Apache Mahout PMC is pleased to announce the release of Mahout 0.11.1. Mahout's goal is to create an environment for quickly creating machine learning applications that scale and run on the highest performance parallel computation engines available. Mahout comprises an interactive environment and library that supports generalized scalable linear algebra and includes many modern machine learning algorithms.</content>
+	</message>
+	<message>
+		<listname>Mahout</listname><content>Hi Mahout devs, I am looking at the Mahout Scala code and some parts of the code use ⇒ symbol and some use =&gt;. I know we can use sacalriform to format the Scala code in sbt, but I am not sure it is done with maven? And also should we use ⇒ to represent =&gt; in Scala code for patches and contributions? Thanks, - Henry</content><sender name="Henry" position="73" />
+	</message>
+	<message>
+		<listname>Mahout</listname><content>We, well, I was trying to migrate to the unicode one. Perhaps a bit unilaterally, simply because that's how I have been writing the rest of my code for the past couple years. But of course I did that on occasional basis. The rule I was following was on the file uniformity basis. If I replace one instance in a file, I replace all the rest. So no mixed style in a file.</content>
+	</message>
+	<message>
+		<listname>Mahout</listname><content>1. Downloaded {src}* {zip,tar} 2. Ran a clean build and all tests pass 3. Spun up Mahout Spark Shell from the compiled artifacts and ran a few Samsara queries, tests passed 4. Downloaded {bin} * {zip, tar} 5. Spun up Mahout Spark Shell from the compiled artifacts and ran a few Samsara queries, tests passed</content>
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi group. I'm using Nutch 2.3, with Mongo store backend,  and I want to access the fetched data directly, without an index like Solr. I know I can access the Mongo database directly to retrieve the content, but, is there a way to do it using the Nutch classes, so that I can do it regardless of the backend? Thanks</content>
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi Andrés: The fetcher.server.delay property as its description says is the number of seconds the fetcher will delay between successive requests to the same server. So, if you configure the fetcher.server.delay property with 2.5 as value, Nutch will wait for 2.5 seconds to make another request to the same server and not between different servers. Regards.</content><receiver name="Andrés" position="1" />
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi Ganji: If you want to make all operations in only one script, Nutch provides you an script named "crawl" for this task. All steps are executed individually in this script. So, the Crawl class doesn't exist. Regards</content><receiver name="Ganji" position="1" />
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi All, I am trying to setup Nutch 1.10 in Eclipse and got partially succeeded in the same. I am able to do operations: Injector, Generator etc. individually using the following code snippet: Can someone help me in merging the individual steps to a crawl script as showin below. I am unable to find Crawl class inside nutch.crawl package in Nutch 1.10. This class is not available from Nutch 1.8.</content>
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi, I configured the fetcher.server.delay property with 2.5 as value, but when nutch is fetching urls, the time fetching between urls is bigger that value configured. I attach some information of execution.</content>
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi Andrés, hi Roannel, that's correct but the question was why the effective delay is "bigger" than the configured 2.5 sec. Nutch implements the delay as sleeping time after one document has been fetched / before the next document is fetched. The observed 4-5 sec. include the time spent for fetching + the delay.</content><receiver name="Andrés" position="1" />
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi Folks, Title says it all. There is only one pending issue for 1.11. https://issues.apache.org/jira/browse/NUTCH-2158 I am testing our the Tika 1.11 patch right now. Do you guys want me to push a release if we can get the Tika committed? I can do this tonight when I get home. Ta Lewis</content><sender name="Lewis" position="76" />
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi, I'm running Nutch 2.3 on EMR (AMI version 2.4.2). The crawl steps are working fine in local and distributed mode (`hadoop -jar apache-nutch-2.3.job &lt;MainClass&gt; &lt;args&gt;`), and am able to call the steps by spinning up the rest service in local mode. But, when I try to run the rest in distributed mode (`hadoop -jar apache-nutch-2.3.job org.apache.nutch.api.NutchServer`), the rest is receiving the calls, but is not getting the job done. What is the correct way to run nutch in distributed mode?</content>
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi All, I propose that we consider moving to ASF supported writeable git repos fro Nutch. This would entail moving Nutch’s canonical repo from: https://svn.apache.org/repos/asf/nutch TO https://git-wip-us.apache.org/repos/asf/nutch.git We are already accepting PRs and so forth from Github and I think many of us are using Git in our regular day to day workflows.</content>
+	</message>
+	<message>
+		<listname>Nutch</listname><content>Hi group. I want to crawl a bunch of sites which have subdomains. I know I can filter external links (external with respect to the bunch of seeds) with the db.ignore.external.links option, but if I do that, Nutch ignores subdomain links. I know also that I can use url filtering with the regex-urlfilter.txt file, but in that case, I have to copy the seeds in the urlfilter, and if I want to crawl another site, I have to modify the urlfilter each time. Is there a transparent way (I mean, a way so that I don't have to modify the urlfilter each time I want to crawl another site) to ignore external links but without ignoring subdomain links? Thanks</content>
+	</message>
+</messages>
