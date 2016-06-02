@@ -43,8 +43,8 @@ object TaggerApp extends App {
           token(tokens, senderPosInt), senderPosInt)
           .toXml)
       writer.newLine()
+      writer.flush()
     })
-  writer.flush()
   writer.close()
 
   println()
