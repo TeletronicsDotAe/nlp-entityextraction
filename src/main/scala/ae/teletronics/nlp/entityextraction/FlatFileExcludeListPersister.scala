@@ -21,5 +21,6 @@ class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPers
       writer.newLine
     }
     writer.flush
+    writer.close
   }
 }
