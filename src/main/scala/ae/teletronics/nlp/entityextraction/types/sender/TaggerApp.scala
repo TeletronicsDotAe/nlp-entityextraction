@@ -23,11 +23,12 @@ object TaggerApp extends App {
   // 2.4 store as xml in output file
   // 3. Display thanks message
 
-
+  writer.write("<messages>")
+  writer.newLine()
   getInputFileLines()
     .foreach(m => {
       val tokens: Array[(String, Int)] = tokenizer.tokenize(m).zipWithIndex.map(s => {
-        print(s._1 + ":" + s._2 + " ")
+        print(s._1 + ":" + s._2 + " \n")
         s
       })
 
@@ -45,6 +46,9 @@ object TaggerApp extends App {
       writer.newLine()
       writer.flush()
     })
+  writer.write("</messages>")
+  writer.newLine()
+  writer.flush()
   writer.close()
 
   println()
