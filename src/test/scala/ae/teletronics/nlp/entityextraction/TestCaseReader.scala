@@ -95,7 +95,7 @@ object TestCaseReader {
   }
 
   def readANERCorpTestCases: List[TestCase] = {
-    val lines = Source.fromFile("src/test/resources/ANERCorp.txt").getLines
+    val lines = Source.fromFile("src/test/resources/ANERCorp.txt", "UTF-8").getLines
 //    val lines = Source.fromFile("src/test/resources/AQMAR_Arabic_NER_corpus-1.0.txt").getLines
     val annotatedLines = lines.filter(isParseable).map(parseAnnotation).toList
     val sentences: List[List[AnnotatedWord]] = makeSentences(annotatedLines)
@@ -103,7 +103,7 @@ object TestCaseReader {
   }
 
   def readAQMARCorpTestCases: List[TestCase] = {
-    val lines = Source.fromFile("src/test/resources/AQMAR_Arabic_NER_corpus-1.0.txt").getLines
+    val lines = Source.fromFile("src/test/resources/AQMAR_Arabic_NER_corpus-1.0.txt", "UTF-8").getLines
     val annotatedLines = lines.filter(isParseable).map(parseAnnotation).toList
     val sentences: List[List[AnnotatedWord]] = makeSentences(annotatedLines)
     sentences.map(makeTestCase)
