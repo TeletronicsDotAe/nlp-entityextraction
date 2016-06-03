@@ -10,7 +10,8 @@ class EngLearnerTest {
   @Test
   def testLearn() = {
     val underTest = new EngLearner()
-    underTest.learn()
+    val s = this.getClass.getClassLoader.getResourceAsStream("train/mailinglists.xml")
+    underTest.learn(s)
   }
 
   @Test
