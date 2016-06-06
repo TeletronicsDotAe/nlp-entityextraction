@@ -11,6 +11,7 @@ import org.junit.{After, Before, Test}
   * Created by trym on 19-05-2016.
   */
 class AlgorithmTest {
+  val xValidationIterations = 15
   var data: RDD[LabeledPoint] = _
   var sc: SparkContext = _
 
@@ -25,60 +26,64 @@ class AlgorithmTest {
     data = streamReader.read(s)
   }
 
-  def splitData()  = {
-    data.randomSplit(Array(.8, .2))
-  }
-
   @After
   def teardown: Unit = {
     sc.stop()
   }
 
   @Test
+  def randomForest() : Unit = {
+    crossValidate(new RandomForestTrainer)
+  }
+
+  @Test
   def naiveBayes() : Unit = {
-    println(crossValidate(5, testNaiveBayes))
+    crossValidate(new NaiveBayesTrainer)
   }
 
   @Test
   def decisionTree() : Unit = {
-    println(crossValidate(5, testDecisionTree))
+    crossValidate(new DecisionTreeTrainer)
   }
 
-  def crossValidate(iterations: Int, inner: RDD[(Double, Double)]) = {
+  private def crossValidate(trainer: Trainer): Unit ={
+    println(trainer.getClass.getSimpleName + ": " + crossValidate(xValidationIterations, trainAlgorithm(trainer)))
+  }
+
+  private def crossValidate(iterations: Int, inner: RDD[(Double, Double)]) = {
     val r = (1 to iterations)
       .map(i => {
         inner
       })
       .map(f_score)
-      .map(r => r
-        .filter(p => p._1 == 1)
+      .filter(r => r.count() > 0)
+      //Note: Really need to revisit performance calculations...
+      .map(r =>
+        r
+        .filter(p => {
+          p._1 == 1
+        })
         .map(p => p._2)
-        .first()
       )
+      .map(score => {
+        //Note: Sometimes no scores are returned. Must be handled in some way..
+        if(score.isEmpty()) 0 else score.first()
+      })
 
     r.sum / iterations
   }
 
-  def testNaiveBayes = {
-    val d = splitData
+  private def trainAlgorithm(algorithm: Trainer): RDD[(Double, Double)] ={
+    val d = data.randomSplit(Array(.5, .5))
 
-    new NaiveBayesTrainer()
-      .train(d(0))
-      .test(d(1))
-  }
-
-  def testDecisionTree = {
-    val d = splitData
-
-    new DecisionTreeTrainer()
+    algorithm
       .train(d(0))
       .test(d(1))
   }
 
 
-  def f_score(r: RDD[(Double, Double)]): RDD[(Double, Double)] ={
+  private def f_score(r: RDD[(Double, Double)]): RDD[(Double, Double)] ={
     val metrics: BinaryClassificationMetrics = new BinaryClassificationMetrics(r)
     metrics.fMeasureByThreshold()
-
   }
 }
