@@ -99,9 +99,10 @@ class ArabicEntityExtractorTest {
   }
 
   @Test
-  def testPrecisionAndAccuracy() = {
+  @Ignore("This is not a unit test, but more of a test to find the performance of the entity recognizer")
+  def testPrecisionAndRecall() = {
     val subj = new ArabicEntityExtractor
-//    val testcases = TestCaseReader.readANERCorpTestCases
+    //    val testcases = TestCaseReader.readANERCorpTestCases
     val testcases = TestCaseReader.readAQMARCorpTestCases
     val results = testcases.map(tc => subj.recognize(tc.sentence)).toArray
 
