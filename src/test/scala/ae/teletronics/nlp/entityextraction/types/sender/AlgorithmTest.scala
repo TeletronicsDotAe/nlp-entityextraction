@@ -11,10 +11,8 @@ import org.junit.{After, Before, Test}
   * Created by trym on 19-05-2016.
   */
 class AlgorithmTest {
-  var testData: RDD[LabeledPoint] = _
   var data: RDD[LabeledPoint] = _
   var sc: SparkContext = _
-  val thresholds = Array(1, .8, .6, .4, .2)
 
   @Before
   def setup: Unit = {
@@ -24,9 +22,11 @@ class AlgorithmTest {
 
     val s = this.getClass.getClassLoader.getResourceAsStream("train/mailinglists.xml")
     val streamReader = new XmlStreamReader(sc, tokenizer)
-    val d = streamReader.read(s).randomSplit(Array(.6,.4), seed = 11L)
-    data = d(0)
-    testData = d(1)
+    data = streamReader.read(s)
+  }
+
+  def splitData()  = {
+    data.randomSplit(Array(.8, .2))
   }
 
   @After
@@ -35,30 +35,50 @@ class AlgorithmTest {
   }
 
   @Test
-  def testNaiveBayesLearner() : Unit = {
-    val r = new NaiveBayesTrainer()
-      .train(data)
-      .test(testData)
-
-    printPerformance(r)
+  def naiveBayes() : Unit = {
+    println(crossValidate(5, testNaiveBayes))
   }
 
   @Test
-  def testDecisionTree() : Unit = {
-    val r = new DecisionTreeTrainer()
-      .train(data)
-      .test(testData)
+  def decisionTree() : Unit = {
+    println(crossValidate(5, testDecisionTree))
+  }
 
-    printPerformance(r)
+  def crossValidate(iterations: Int, inner: RDD[(Double, Double)]) = {
+    val r = (1 to iterations)
+      .map(i => {
+        inner
+      })
+      .map(f_score)
+      .map(r => r
+        .filter(p => p._1 == 1)
+        .map(p => p._2)
+        .first()
+      )
+
+    r.sum / iterations
+  }
+
+  def testNaiveBayes = {
+    val d = splitData
+
+    new NaiveBayesTrainer()
+      .train(d(0))
+      .test(d(1))
+  }
+
+  def testDecisionTree = {
+    val d = splitData
+
+    new DecisionTreeTrainer()
+      .train(d(0))
+      .test(d(1))
   }
 
 
-  def printPerformance(r: RDD[(Double, Double)]): Unit ={
+  def f_score(r: RDD[(Double, Double)]): RDD[(Double, Double)] ={
     val metrics: BinaryClassificationMetrics = new BinaryClassificationMetrics(r)
-    //val precision: RDD[(Double, Double)] = metrics.precisionByThreshold()
-    //val recall: RDD[(Double, Double)] = metrics.recallByThreshold()
-    val f1: RDD[(Double, Double)] = metrics.fMeasureByThreshold()
+    metrics.fMeasureByThreshold()
 
-    f1.foreach(f => println(s"threshold: ${f._1} , score: ${f._2} "))
   }
 }
