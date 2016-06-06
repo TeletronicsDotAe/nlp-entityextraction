@@ -11,6 +11,6 @@ trait Trainer {
 }
 
 trait Model {
-  def predict(data: RDD[LabeledPoint]) : RDD[Double]
+  def predict(data: RDD[org.apache.spark.mllib.linalg.Vector]) : RDD[Double]
   def test(data: RDD[LabeledPoint]) : RDD[(Double, Double)]
 }
