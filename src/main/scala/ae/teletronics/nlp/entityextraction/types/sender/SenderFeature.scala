@@ -9,13 +9,13 @@ import org.apache.spark.mllib.linalg.{Vector, Vectors}
   * Features:
   *   isCapitalized (0 - not, 1 - is),
   *   locationInMessage ([1..MessageLength])
-  *   previousTerm, (0 - none, 1-xx string.hashCode)
-  *
+  *   previousTerm, (0 - none, 1 - xx string.hashCode)
+  *   isPerson (0 - not, 1 - is)
   */
-case class SenderFeature(term: String, isCapitalized: Boolean, locationInMessage: Int, previousTerm: Int) {
+case class SenderFeature(term: String, isCapitalized: Boolean, locationInMessage: Int, previousTerm: Int, isPerson: Boolean) {
 
   def features(): Vector = {
-    Vectors.dense(asDouble(isCapitalized), locationInMessage, previousTerm)
+    Vectors.dense(asDouble(isCapitalized), locationInMessage, previousTerm, asDouble(isPerson))
   }
 }
 
