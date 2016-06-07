@@ -18,7 +18,9 @@ class ArabicEntityExtractor(excludeListPersister: ExcludeListPersister) extends 
 
   def this() = this(new DefaultExcludeListPersister)
 
-  val annie: CorpusController = PersistenceManager.loadObjectFromFile(new java.io.File("")).asInstanceOf[CorpusController]
+  import ArabicEntityExtractor._
+
+  val annie: CorpusController = PersistenceManager.loadObjectFromFile(new java.io.File(defaultModelName)).asInstanceOf[CorpusController]
 
   override def recognize(text: String): java.util.Map[String, java.util.List[String]] = {
 
@@ -52,5 +54,5 @@ object ArabicEntityExtractor {
   Gate.runInSandbox(true)
   Gate.init()
 
-  val defaultModelName = "src/main/resources/plugins/Lang_Arabic/resources/arabic.gapp"
+  val defaultModelName = "src/main/resources/gate-8.2/plugins/Lang_Arabic/resources/arabic.gapp"
 }

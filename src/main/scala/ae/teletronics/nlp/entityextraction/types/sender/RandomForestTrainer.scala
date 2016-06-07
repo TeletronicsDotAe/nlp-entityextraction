@@ -11,7 +11,7 @@ class RandomForestTrainer extends Trainer{
   override def train(data: RDD[LabeledPoint]): Model = {
     val numClasses = 2
     val categoricalFeaturesInfo = Map[Int, Int]()
-    val numTrees = 10 // Use more in practice.
+    val numTrees = 10
     val featureSubsetStrategy = "auto" // Let the algorithm choose.
     val impurity = "gini"
     val maxDepth = 4
