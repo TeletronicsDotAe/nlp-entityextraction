@@ -6,7 +6,7 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
-import org.junit.{After, Before, BeforeClass, Test}
+import org.junit.{After, Before, Test}
 
 /**
   * Created by trym on 19-05-2016.
@@ -16,13 +16,13 @@ class AlgorithmTest {
   var data: RDD[LabeledPoint] = _
   var sc: SparkContext = _
 
-  @BeforeClass
-  def setupClass = {
-    Logger.getRootLogger().setLevel(Level.OFF);
-  }
+  var loggerLevel:org.apache.log4j.Level = _
 
   @Before
   def setup: Unit = {
+    loggerLevel = Logger.getRootLogger.getLevel
+    Logger.getRootLogger().setLevel(Level.OFF);
+
     val tokenizer = SimpleTokenizer.INSTANCE
     val conf = new SparkConf().setAppName("Simple Application").setMaster("local")
     sc = new SparkContext(conf)
@@ -34,6 +34,7 @@ class AlgorithmTest {
 
   @After
   def teardown: Unit = {
+    Logger.getRootLogger().setLevel(loggerLevel);
     sc.stop()
   }
 
