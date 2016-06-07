@@ -56,17 +56,19 @@ class AlgorithmTest {
   private def crossValidate(trainer: Trainer): Unit ={
     val r = (1 to xValidationIterations)
       .map(i => {
-        trainAlgorithm(trainer, xValidationIterations)
+        trainAlgorithm(trainer, i)
       })
       .map(x => {
         val r = x._1
-        val t = x._2
-        val training_data_length = t.count()
-        val training_data_relevant = t.filter(row => row.label == 1).count()
+        val training_data = x._2(0)
+        val test_data: RDD[LabeledPoint] = x._2(1)
+        val training_data_length = training_data.count()
+        val training_data_relevant = training_data.filter(row => row.label == 1).count()
         val relevant = r.filter(row => row._2 == 1)
         val returned = r.filter(row => row._1 == 1)
         val positives = relevant.intersection(returned)
         val false_positives = returned.subtract(relevant)
+
         metrics(r.count(), relevant.count(), returned.count(), positives.count(), false_positives.count(), training_data_length, training_data_relevant)
       })
       .reduce((metrics, sum) => {
@@ -74,25 +76,29 @@ class AlgorithmTest {
       })
 
     println("----------------------------")
-    println(trainer.getClass.getSimpleName + ": \n-------------\n" + r)
+    println(trainer.getClass.getSimpleName + ": \n-------------\n" + r.divideBy(xValidationIterations))
     println("----------------------------")
   }
 
-  private def trainAlgorithm(algorithm: Trainer, seed: Long): (RDD[(Double, Double)], RDD[LabeledPoint]) ={
-    val d = data.randomSplit(Array(.7, .3), seed + 2)
+  private def trainAlgorithm(algorithm: Trainer, seed: Long): (RDD[(Double, Double)], Array[RDD[LabeledPoint]]) ={
+    val d = data.randomSplit(Array(.7, .3), seed)
 
     (algorithm
       .train(d(0))
-      .test(d(1)), d(0))
+      .test(d(1)), d)
   }
 
-  case class metrics(test_set_length: Long, relevant: Long, returned: Long, positives: Long, false_positives: Long, training_data_length: Long, training_data_relevant: Long){
+  case class metrics(test_set_length: Double, relevant: Double, returned: Double, positives: Double, false_positives: Double, training_data_length: Double, training_data_relevant: Double){
     def add(other: metrics): metrics = {
-      return metrics(test_set_length + other.test_set_length, relevant + other.relevant, returned + other.returned, positives + other.positives, false_positives + other.false_positives, training_data_length + other.training_data_length, training_data_relevant + other.training_data_relevant)
+      metrics(test_set_length + other.test_set_length, relevant + other.relevant, returned + other.returned, positives + other.positives, false_positives + other.false_positives, training_data_length + other.training_data_length, training_data_relevant + other.training_data_relevant)
+    }
+
+    def divideBy(divisor: Double): metrics = {
+      metrics(test_set_length / divisor, relevant / divisor, returned / divisor, positives / divisor, false_positives / divisor, training_data_length / divisor, training_data_relevant / divisor)
     }
 
     override def toString = {
-      s"training data length: ${training_data_length}\ntraining data relevant: ${training_data_relevant}\n-------------\ntest set length: ${test_set_length}\nrelevant: ${relevant}\nreturned: ${returned}\ntrue positives: ${positives}\nfalse positives: ${false_positives}"
+      f"training data length: $training_data_length%1.2f\ntraining data relevant: $training_data_relevant%1.2f\n-------------\ntest set length: $test_set_length%1.2f \nrelevant: $relevant%1.2f\nreturned: $returned%1.2f\ntrue positives: $positives%1.2f\nfalse positives: $false_positives%1.2f"
     }
   }
 }
