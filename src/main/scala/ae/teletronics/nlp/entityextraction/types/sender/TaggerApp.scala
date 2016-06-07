@@ -27,6 +27,15 @@ object TaggerApp extends App {
   writer.newLine()
   getInputFileLines()
     .foreach(m => {
+
+      for (_  <- 1 to 100){
+        println()
+      }
+
+      println(m)
+      println
+      println
+
       val tokens: Array[(String, Int)] = tokenizer.tokenize(m).zipWithIndex.map(s => {
         print(s._1 + ":" + s._2 + " \n")
         s
