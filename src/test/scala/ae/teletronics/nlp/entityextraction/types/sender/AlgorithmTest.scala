@@ -11,7 +11,7 @@ import org.junit.{After, Before, Test}
   * Created by trym on 19-05-2016.
   */
 class AlgorithmTest {
-  val xValidationIterations = 30
+  val xValidationIterations = 10
   var data: RDD[LabeledPoint] = _
   var sc: SparkContext = _
 
@@ -47,34 +47,30 @@ class AlgorithmTest {
   }
 
   private def crossValidate(trainer: Trainer): Unit ={
-    println(trainer.getClass.getSimpleName + ": " + crossValidate(xValidationIterations, trainAlgorithm(trainer)))
-  }
-
-  private def crossValidate(iterations: Int, inner: RDD[(Double, Double)]) = {
-    val r = (1 to iterations)
+    val r = (1 to xValidationIterations)
       .map(i => {
-        inner
+        trainAlgorithm(trainer, xValidationIterations)
       })
       .map(f_score)
       .filter(r => r.count() > 0)
       //Note: Really need to revisit performance calculations...
       .map(r =>
-        r
+      r
         .filter(p => {
           p._1 == 1
         })
         .map(p => p._2)
-      )
+    )
       .map(score => {
         //Note: Sometimes no scores are returned. Must be handled in some way..
         if(score.isEmpty()) 0 else score.first()
       })
 
-    r.sum / iterations
+    println(trainer.getClass.getSimpleName + ": " + r.sum / xValidationIterations)
   }
 
-  private def trainAlgorithm(algorithm: Trainer): RDD[(Double, Double)] ={
-    val d = data.randomSplit(Array(.7, .3))
+  private def trainAlgorithm(algorithm: Trainer, seed: Long): RDD[(Double, Double)] ={
+    val d = data.randomSplit(Array(.7, .3), seed)
 
     algorithm
       .train(d(0))
