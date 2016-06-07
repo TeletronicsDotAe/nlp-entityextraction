@@ -54,5 +54,5 @@ object ArabicEntityExtractor {
   Gate.runInSandbox(true)
   Gate.init()
 
-  val defaultModelName = "src/main/resources/plugins/Lang_Arabic/resources/arabic.gapp"
+  val defaultModelName = "src/main/resources/gate-8.2/plugins/Lang_Arabic/resources/arabic.gapp"
 }
