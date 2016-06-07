@@ -11,7 +11,7 @@ import org.junit.{After, Before, Test}
   * Created by trym on 19-05-2016.
   */
 class AlgorithmTest {
-  val xValidationIterations = 15
+  val xValidationIterations = 30
   var data: RDD[LabeledPoint] = _
   var sc: SparkContext = _
 
@@ -74,7 +74,7 @@ class AlgorithmTest {
   }
 
   private def trainAlgorithm(algorithm: Trainer): RDD[(Double, Double)] ={
-    val d = data.randomSplit(Array(.5, .5))
+    val d = data.randomSplit(Array(.7, .3))
 
     algorithm
       .train(d(0))
