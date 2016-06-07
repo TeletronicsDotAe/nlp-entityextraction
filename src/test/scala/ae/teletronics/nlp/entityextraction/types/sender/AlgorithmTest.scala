@@ -2,7 +2,6 @@ package ae.teletronics.nlp.entityextraction.types.sender
 
 import opennlp.tools.tokenize.SimpleTokenizer
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
@@ -22,6 +21,7 @@ class AlgorithmTest {
   def setup: Unit = {
     loggerLevel = Logger.getRootLogger.getLevel
     Logger.getRootLogger().setLevel(Level.OFF);
+    Logger.getLogger("org.apache.spark").setLevel(Level.OFF)
 
     val tokenizer = SimpleTokenizer.INSTANCE
     val conf = new SparkConf().setAppName("Simple Application").setMaster("local")
@@ -58,23 +58,41 @@ class AlgorithmTest {
       .map(i => {
         trainAlgorithm(trainer, xValidationIterations)
       })
+      .map(x => {
+        val r = x._1
+        val t = x._2
+        val training_data_length = t.count()
+        val training_data_relevant = t.filter(row => row.label == 1).count()
+        val relevant = r.filter(row => row._2 == 1)
+        val returned = r.filter(row => row._1 == 1)
+        val positives = relevant.intersection(returned)
+        val false_positives = returned.subtract(relevant)
+        metrics(r.count(), relevant.count(), returned.count(), positives.count(), false_positives.count(), training_data_length, training_data_relevant)
+      })
+      .reduce((metrics, sum) => {
+        sum.add(metrics)
+      })
 
-
-
-    //println(trainer.getClass.getSimpleName + ": " + r.sum / xValidationIterations)
+    println("----------------------------")
+    println(trainer.getClass.getSimpleName + ": \n-------------\n" + r)
+    println("----------------------------")
   }
 
-  private def trainAlgorithm(algorithm: Trainer, seed: Long): RDD[(Double, Double)] ={
-    val d = data.randomSplit(Array(.7, .3), seed)
+  private def trainAlgorithm(algorithm: Trainer, seed: Long): (RDD[(Double, Double)], RDD[LabeledPoint]) ={
+    val d = data.randomSplit(Array(.7, .3), seed + 2)
 
-    algorithm
+    (algorithm
       .train(d(0))
-      .test(d(1))
+      .test(d(1)), d(0))
   }
 
+  case class metrics(test_set_length: Long, relevant: Long, returned: Long, positives: Long, false_positives: Long, training_data_length: Long, training_data_relevant: Long){
+    def add(other: metrics): metrics = {
+      return metrics(test_set_length + other.test_set_length, relevant + other.relevant, returned + other.returned, positives + other.positives, false_positives + other.false_positives, training_data_length + other.training_data_length, training_data_relevant + other.training_data_relevant)
+    }
 
-  private def f_score(r: RDD[(Double, Double)]): RDD[(Double, Double)] ={
-    val metrics: BinaryClassificationMetrics = new BinaryClassificationMetrics(r)
-    metrics.fMeasureByThreshold()
+    override def toString = {
+      s"training data length: ${training_data_length}\ntraining data relevant: ${training_data_relevant}\n-------------\ntest set length: ${test_set_length}\nrelevant: ${relevant}\nreturned: ${returned}\ntrue positives: ${positives}\nfalse positives: ${false_positives}"
+    }
   }
 }

@@ -9,6 +9,7 @@ import Assert.assertThat
 import org.hamcrest.Matchers._
 import scala.collection.JavaConversions._
 
+@Ignore
 @Test
 class ArabicEntityExtractorTest {
 
