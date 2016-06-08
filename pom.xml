@@ -49,8 +49,11 @@
       <artifactId>spark-mllib_2.11</artifactId>
       <version>1.6.1</version>
     </dependency>
-
-
+    <dependency>
+      <groupId>edu.stanford.nlp</groupId>
+      <artifactId>stanford-corenlp</artifactId>
+      <version>3.6.0</version>
+    </dependency>
 
     <!-- Test -->
     <dependency>
@@ -190,6 +193,25 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>external.atlassian.jgitflow</groupId>
+        <artifactId>jgitflow-maven-plugin</artifactId>
+        <version>1.0-m5.1</version>
+        <configuration>
+          <username>${git.user}</username>
+          <password>${git.password}</password>
+          <pushReleases>true</pushReleases>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <allowSnapshots>true</allowSnapshots>
+          <enableFeatureVersions>true</enableFeatureVersions>
+          <flowInitContext>
+            <masterBranchName>master</masterBranchName>
+            <developBranchName>develop</developBranchName>
+            <releaseBranchPrefix>release-</releaseBranchPrefix>
+            <versionTagPrefix>${project.artifactId}-</versionTagPrefix>
+          </flowInitContext>
+        </configuration>
       </plugin>
     </plugins>
   </build>
