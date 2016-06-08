@@ -3,9 +3,6 @@ package ae.teletronics.nlp.entityextraction
 /**
   * Created by Boris on 2016-04-18.
   */
-
-import java.net.URL
-
 import gate.Annotation
 import gate.Corpus
 import gate.AnnotationSet
