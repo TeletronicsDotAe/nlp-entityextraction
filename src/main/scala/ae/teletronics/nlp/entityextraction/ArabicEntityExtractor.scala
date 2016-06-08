@@ -3,6 +3,9 @@ package ae.teletronics.nlp.entityextraction
 /**
   * Created by Boris on 2016-04-18.
   */
+
+import java.net.URL
+
 import gate.Annotation
 import gate.Corpus
 import gate.AnnotationSet
@@ -20,7 +23,8 @@ class ArabicEntityExtractor(excludeListPersister: ExcludeListPersister) extends 
 
   import ArabicEntityExtractor._
 
-  val annie: CorpusController = PersistenceManager.loadObjectFromFile(new java.io.File(defaultModelName)).asInstanceOf[CorpusController]
+  val annie: CorpusController = PersistenceManager.loadObjectFromUrl(
+    getClass().getResource(defaultModelName)).asInstanceOf[CorpusController]
 
   override def recognize(text: String): java.util.Map[String, java.util.List[String]] = {
 
@@ -54,5 +58,5 @@ object ArabicEntityExtractor {
   Gate.runInSandbox(true)
   Gate.init()
 
-  val defaultModelName = "src/main/resources/gate-8.2/plugins/Lang_Arabic/resources/arabic.gapp"
+  val defaultModelName = "/gate-8.2/plugins/Lang_Arabic/resources/arabic.gapp"
 }
