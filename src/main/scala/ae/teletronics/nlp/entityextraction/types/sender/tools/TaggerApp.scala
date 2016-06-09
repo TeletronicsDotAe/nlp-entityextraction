@@ -1,10 +1,11 @@
-package ae.teletronics.nlp.entityextraction.types.sender
+package ae.teletronics.nlp.entityextraction.types.sender.tools
 
-import java.io.{FileOutputStream, OutputStreamWriter, BufferedWriter}
+import java.io.{BufferedWriter, FileOutputStream, OutputStreamWriter}
 
+import ae.teletronics.nlp.entityextraction.types.sender.TrainMessage
 import opennlp.tools.tokenize.SimpleTokenizer
 
-import scala.io.{StdIn, Source}
+import scala.io.{Source, StdIn}
 
 /**
   * Created by trym on 20-05-2016.

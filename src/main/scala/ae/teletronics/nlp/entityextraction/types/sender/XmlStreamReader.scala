@@ -20,12 +20,14 @@ class XmlStreamReader(context: SparkContext, tokenizer: SimpleTokenizer) {
     val messages: Seq[LabeledPoint] = TrainMessage.readMessages(trainingXmlStream)
       .flatMap(t => {
         val persons = engine.process(t.content).getPersons()
-        tokenizer.tokenize("." + t.content)
+        val contentAsTokens = tokenizer.tokenize("." + t.content)
+        val tokenCount = contentAsTokens.length
+        contentAsTokens
           .iterator.sliding(2)
           .zipWithIndex
-          .map { case (terms, index) => asFeature(terms(1), index, terms(0), persons) }
+          .map { case (terms, index) => asFeature(terms(1), (tokenCount - index), terms(0), persons) }
           .map(f => {
-            val aIsSender = asDouble(isSender(f, t.s, t.sPos))
+            val aIsSender = asDouble(isSender(f, t.s, (tokenCount - t.sPos)))
 //            println(s"isSender: ${aIsSender}, f: ${f.features}")
             LabeledPoint(aIsSender, f.features)
           })
