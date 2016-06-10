@@ -1,5 +1,6 @@
 package ae.teletronics.nlp.entityextraction.types.sender
 
+import org.apache.spark.SparkContext
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 
@@ -14,6 +15,11 @@ class NaiveBayesModel(val model: org.apache.spark.mllib.classification.NaiveBaye
   override def test(data: RDD[LabeledPoint]): RDD[(Double, Double)] = {
     NaiveBayesModelInternals.test(model, data)
   }
+
+  override def save(sc: SparkContext, fileName: String): Unit = {
+    model.save(sc, fileName)
+  }
+
 }
 
 private object NaiveBayesModelInternals {

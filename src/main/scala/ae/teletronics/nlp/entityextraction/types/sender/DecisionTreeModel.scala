@@ -1,5 +1,6 @@
 package ae.teletronics.nlp.entityextraction.types.sender
 
+import org.apache.spark.SparkContext
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 
@@ -14,6 +15,9 @@ class DecisionTreeModel(val model: org.apache.spark.mllib.tree.model.DecisionTre
   override def predict(data: RDD[org.apache.spark.mllib.linalg.Vector]): RDD[Double] = {
     DecisionTreeModelInternals.predict(model, data)
   }
+
+  override def save(sc: SparkContext, fileName: String): Unit = model.save(sc, fileName)
+
 }
 
 object DecisionTreeModelInternals {
