@@ -9,8 +9,10 @@ import scala.xml.{Node, XML}
   */
 case class TrainMessage(content: String, r: Option[String], rPos: Int, s: Option[String], sPos: Int) {
 
-  def toXml() =
-    s"<message><content>${content}</content>${f("receiver", r, rPos)}${f("sender", s, sPos)}</message>"
+  def toXml() = {
+    import scala.xml.Utility.escape
+    s"<message><content>${escape(content)}</content>${f("receiver", r, rPos)}${f("sender", s, sPos)}</message>"
+  }
 
   private def f(tag: String, name: Option[String], p: Int) =
     name
