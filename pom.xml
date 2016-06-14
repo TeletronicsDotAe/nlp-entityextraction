@@ -153,6 +153,7 @@
         </executions>
       </plugin>
       <plugin>
+		<!-- Use mvn assembly:assembly to build the Tagger App --> 
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.6</version>
@@ -164,20 +165,10 @@
           <!-- MainClass in mainfest make a executable jar -->
           <archive>
             <manifest>
-              <mainClass>ae.teletronics.nlp.entityextraction.types.sender.TaggerApp</mainClass>
+              <mainClass>ae.teletronics.nlp.entityextraction.types.sender.tools.TaggerApp</mainClass>
             </manifest>
           </archive>
         </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <!-- bind to the packaging phase -->
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>external.atlassian.jgitflow</groupId>
