@@ -175,6 +175,7 @@
         <artifactId>jgitflow-maven-plugin</artifactId>
         <version>1.0-m5.1</version>
         <configuration>
+		  <enableSshPass>true</enableSshPass>
           <pushReleases>true</pushReleases>
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <allowSnapshots>true</allowSnapshots>
