@@ -1,8 +1,5 @@
 package ae.teletronics.nlp.entityextraction.types.sender.stanford
 
-import java.io.Serializable
-
-import ae.teletronics.nlp.entityextraction.model.Entities
 import edu.stanford.nlp.ie.crf.CRFClassifier
 import edu.stanford.nlp.ling.{CoreAnnotations, CoreLabel}
 
