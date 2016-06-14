@@ -1,8 +1,6 @@
 package ae.teletronics.nlp.entityextraction.types.sender.stanford
 
-import java.io.Serializable
-
-import ae.teletronics.nlp.entityextraction.model.Entities
+import ae.teletronics.nlp.entityextraction.types.sender.ToFromExtractor
 import edu.stanford.nlp.ie.crf.CRFClassifier
 import edu.stanford.nlp.ling.{CoreAnnotations, CoreLabel}
 
@@ -14,13 +12,13 @@ object StanfordToFromExtractor {
   private lazy val classifier = CRFClassifier.getClassifier(serializedClassifier)
 }
 
-class StanfordToFromExtractor {
+class StanfordToFromExtractor extends ToFromExtractor {
 
   import StanfordToFromExtractor.classifier
 
   import scala.collection.JavaConversions._
 
-  def process(text: String): List[String] = {
+  override def process(text: String): List[String] = {
     val llcl: java.util.List[java.util.List[CoreLabel]] = classifier.classify(text)
 
     llcl
