@@ -5,11 +5,13 @@ package ae.teletronics.nlp.entityextraction
   */
 class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPersister {
 
+  import scala.collection.JavaConversions._
+
   val filename = "exclude-list-" + filenamePart + ".txt"
 
-  override def getExcludeList: List[String] = scala.io.Source.fromFile(filename, "UTF-8").getLines.map(line => line.trim).filter(line => line != "").toList
+  override def getExcludeList: java.util.List[String] = scala.io.Source.fromFile(filename, "UTF-8").getLines.map(line => line.trim).filter(line => line != "").toList
 
-  override def setExcludeList(list: List[String]): Unit = {
+  override def setExcludeList(list: java.util.List[String]): Unit = {
     import java.io.File
     import java.io.FileWriter
     import java.io.BufferedWriter

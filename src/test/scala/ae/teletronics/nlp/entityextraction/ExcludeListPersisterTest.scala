@@ -13,6 +13,8 @@ import scala.collection.JavaConversions._
 @Test
 class ExcludeListPersisterTest {
 
+  import scala.collection.JavaConversions._
+
   @Test
   def testReadWriteFilePersistence() = {
     import java.nio.file.{Paths, Files}
