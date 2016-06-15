@@ -9,7 +9,16 @@ class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPers
 
   val filename = "exclude-list-" + filenamePart + ".txt"
 
-  override def getExcludeList: java.util.List[String] = scala.io.Source.fromFile(filename, "UTF-8").getLines.map(line => line.trim).filter(line => line != "").toList
+  override def getExcludeList: java.util.List[String] = {
+    import java.nio.file.{Paths, Files}
+
+    if (Files.exists(Paths.get(filename))) {
+      new java.util.ArrayList(scala.io.Source.fromFile(filename, "UTF-8").getLines.map(line => line.trim).filter(line => line != "").toList)
+    } else {
+      List()
+    }
+  }
+
 
   override def setExcludeList(list: java.util.List[String]): Unit = {
     import java.io.File
