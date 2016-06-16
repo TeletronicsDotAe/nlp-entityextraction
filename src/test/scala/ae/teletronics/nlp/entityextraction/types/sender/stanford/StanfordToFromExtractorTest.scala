@@ -3,6 +3,7 @@ package ae.teletronics.nlp.entityextraction.types.sender.stanford
 import org.junit.Assert.assertEquals
 import org.junit.{Ignore, Test}
 
+import scala.io.Source
 import scala.xml.XML
 
 /**
@@ -12,18 +13,39 @@ class StanfordToFromExtractorTest {
   private val extractor = new StanfordToFromExtractor()
 
   @Test
-  def testExtraction() = {
+  def testSenderExtraction() = {
     val message = "Got it -Bibob"
     val res = extractor.process(message)
-    assertEquals(1, res.size)
-    assertEquals("Bibob", res(0))
+    assertEquals(1, res.from.size)
+    assertEquals("Bibob", res.from(0))
   }
 
   @Test
-  def testExtractionNoSender() = {
+  def testReceiverExtraction() = {
+    val message = "Peter, you have 1 message and 4 friend requests on Facebook"
+    val res = extractor.process(message)
+    assertEquals(1, res.to.size)
+    assertEquals("Peter", res.to(0))
+  }
+
+  @Test
+  def testEmptyExtraction() = {
     val message = "Joe popped my balloon today"
     val res = extractor.process(message)
-    assertEquals(0, res.size)
+    assertEquals(0, res.from.size)
+    assertEquals(0, res.to.size)
+  }
+
+  @Ignore
+  @Test
+  def testExtraction2() = {
+    for (c: String <- Source.fromFile("src/test/resources/").getLines()) {
+      val res = extractor.process(c)
+      if (!res.from.isEmpty) {
+        println("Found a sender: " + res.from(0) + " in message: " + c)
+      }
+    }
+
   }
 
   @Ignore
@@ -32,32 +54,33 @@ class StanfordToFromExtractorTest {
     var noSender = 0
     var totalCount = 0
     var falseSender = 0
+    var senderTP = 0
     for (m <- loadMessages()) {
       totalCount = totalCount + 1
       val res = extractor.process(m.content)
-      if (!m.from.isEmpty && res.size < 1) {
+      if (!m.from.isEmpty && res.from.size < 1) {
 //        println("Didn't find the sender: " + m)
         noSender = noSender + 1
-      } else if (!m.from.isEmpty && !m.from.equals(res(0))) {
-        println("Wrong sender found: " +res(0) + " in: " + m)
-      } else if (m.from.isEmpty && res.size > 0) {
-        println("Found a sender where no one is tagged: " + res(0) + " in: " + m)
+      } else if (!m.from.isEmpty && !m.from.equals(res.from(0))) {
+        println("Wrong sender found: " +res.from(0) + " in: " + m)
+      } else if (m.from.isEmpty && res.from.size > 0) {
+        println("Found a sender where no one is tagged: " + res.from(0) + " in: " + m)
         falseSender = falseSender + 1
-      } else if (res.size > 0) {
-        println("Found sender: " + res(0))
+      } else if (res.from.size > 0) {
+//        println("Found sender: " + res(0))
+        senderTP = senderTP + 1
       } else if (!m.from.isEmpty) {
         println("Expected sender: " + m.from)
       }
     }
     println("Summary:\n\tTotal count: " + totalCount +
       "\n\tMissed sender: " + noSender +
+      "\n\tFound sender: " + senderTP +
       "\n\tFalse sender (FP): " + falseSender)
   }
 
   private def loadMessages() = {
-    val f = getClass.getClassLoader.getResourceAsStream("prod-sms/prod-sms-eng.xml")
-//    val f = getClass.getClassLoader.getResourceAsStream("prod-sms/prod-sms-eng-per.tagged.xml")
-//    val f = getClass.getClassLoader.getResourceAsStream("prod-sms/prod-sms-eng-per.tagged.only-sender.xml")
+    val f = getClass.getClassLoader.getResourceAsStream("eng-per.tagged.xml")
     val xml = XML.load(f)
     val xMessages = xml \\ "messages" \\ "message"
     val msgs = xMessages
