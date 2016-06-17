@@ -19,6 +19,7 @@ class ArabicEntityExtractor(excludeListPersister: ExcludeListPersister) extends 
   def this() = this(new DefaultExcludeListPersister)
 
   import ArabicEntityExtractor._
+  import scala.collection.JavaConversions._
 
   val annie: CorpusController = PersistenceManager.loadObjectFromFile(new java.io.File(defaultModelName)).asInstanceOf[CorpusController]
 
@@ -34,9 +35,9 @@ class ArabicEntityExtractor(excludeListPersister: ExcludeListPersister) extends 
 
   private def extractEntities(annotations: AnnotationSet, text: String): java.util.Map[String, java.util.List[String]] = {
 
-    val excludes = excludeListPersister.getExcludeList
+    val excludes: Map[String, java.util.List[String]] = EntityType.allEntityTypes.map(e => e -> excludeListPersister.getExcludeList(e)).toMap
 
-    val entities: Iterable[Annotation] = annotations.get(Set[String](EntityType.Person, EntityType.Location, EntityType.GeoPoliticalEntity, EntityType.Organization)).toIterable
+    val entities: Iterable[Annotation] = annotations.get(EntityType.allEntityTypes.toSet).toIterable
 
     def getEntity(entity: Annotation): String = {
       text.substring(entity.getStartNode.getOffset.intValue, entity.getEndNode.getOffset.intValue())
@@ -44,7 +45,7 @@ class ArabicEntityExtractor(excludeListPersister: ExcludeListPersister) extends 
 
     val ret: java.util.Map[String, java.util.List[String]] = entities.map(e => e.getType -> getEntity(e))
       .groupBy(_._1)
-      .map { case (k, v) => (k, v.map(_._2).filter(e => !excludes.contains(e)).toList.asJava) }
+      .map { case (k, v) => (k, v.map(_._2).filter(e => !excludes(k).contains(e)).toList.asJava) }
 
     ret
   }

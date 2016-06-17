@@ -7,10 +7,12 @@ class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPers
 
   import scala.collection.JavaConversions._
 
-  val filename = "exclude-list-" + filenamePart + ".txt"
+  def mkFilename(entityType: String) = "exclude-list-" + entityType + "-" + filenamePart + ".txt"
 
-  override def getExcludeList: java.util.List[String] = {
+  def getExcludeList(entityType: String): java.util.List[String] = {
     import java.nio.file.{Paths, Files}
+
+    val filename = mkFilename(entityType)
 
     if (Files.exists(Paths.get(filename))) {
       new java.util.ArrayList(scala.io.Source.fromFile(filename, "UTF-8").getLines.map(line => line.trim).filter(line => line != "").toList)
@@ -19,13 +21,12 @@ class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPers
     }
   }
 
-
-  override def setExcludeList(list: java.util.List[String]): Unit = {
+  def setExcludeList(entityType: String, list: java.util.List[String]): Unit = {
     import java.io.File
     import java.io.FileWriter
     import java.io.BufferedWriter
 
-    val writer = new BufferedWriter(new FileWriter(new File(filename)))
+    val writer = new BufferedWriter(new FileWriter(new File(mkFilename(entityType))))
 
     for (entry <- list) {
       writer.write(entry)

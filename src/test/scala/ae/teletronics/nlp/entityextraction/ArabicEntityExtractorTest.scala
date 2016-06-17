@@ -64,7 +64,7 @@ class ArabicEntityExtractorTest {
     val excludeFileName = "arabicTest"
 
     val excluder = new FlatFileExcludeListPersister(excludeFileName)
-    excluder.setExcludeList(List(person))
+    excluder.setExcludeList(EntityType.Person, List(person))
 
     val postSubj = new ArabicEntityExtractor(excluder)
     val postResult = postSubj.recognize(text)
