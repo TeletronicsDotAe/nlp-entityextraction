@@ -1,6 +1,7 @@
 package ae.teletronics.nlp.entityextraction.types.sender.stanford
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.{Ignore, Test}
 
 import scala.io.Source
@@ -18,6 +19,7 @@ class StanfordToFromExtractorTest {
     val res = extractor.process(message)
     assertEquals(1, res.from.size)
     assertEquals("Bibob", res.from(0))
+    assertEquals("Bibob", res.from2String())
   }
 
   @Test
@@ -26,6 +28,7 @@ class StanfordToFromExtractorTest {
     val res = extractor.process(message)
     assertEquals(1, res.to.size)
     assertEquals("Peter", res.to(0))
+    assertEquals("Peter", res.to2String())
   }
 
   @Test
@@ -34,6 +37,8 @@ class StanfordToFromExtractorTest {
     val res = extractor.process(message)
     assertEquals(0, res.from.size)
     assertEquals(0, res.to.size)
+    assertTrue(res.from2String().isEmpty)
+    assertTrue(res.to2String().isEmpty)
   }
 
   @Ignore
