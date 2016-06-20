@@ -9,7 +9,7 @@ class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPers
 
   def mkFilename(entityType: String) = "exclude-list-" + entityType + "-" + filenamePart + ".txt"
 
-  def getExcludeList(entityType: String): java.util.List[String] = {
+  override def getExcludeList(entityType: String): java.util.List[String] = {
     import java.nio.file.{Paths, Files}
 
     val filename = mkFilename(entityType)
@@ -21,7 +21,7 @@ class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPers
     }
   }
 
-  def setExcludeList(entityType: String, list: java.util.List[String]): Unit = {
+  override def setExcludeList(entityType: String, list: java.util.List[String]): Unit = {
     import java.io.File
     import java.io.FileWriter
     import java.io.BufferedWriter
