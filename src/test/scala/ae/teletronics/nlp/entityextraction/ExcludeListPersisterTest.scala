@@ -27,8 +27,9 @@ class ExcludeListPersisterTest {
 
     val subj = new FlatFileExcludeListPersister(filename)
 
-    subj.setExcludeList(lines)
-    val excludes = subj.getExcludeList
+    subj.setExcludeList(EntityType.Location, lines)
+    val excludes = subj.getExcludeList(EntityType.Location)
+    val nonTypeExcludes = subj.getExcludeList(EntityType.Organization)
     Files.deleteIfExists(Paths.get(filename))
 
     assertThat(excludes.length, is(lines.length))
@@ -36,5 +37,6 @@ class ExcludeListPersisterTest {
 
     val javaLines: java.util.List[String] = lines
     assertThat(javaLines, containsInAnyOrder(excludes(0), excludes(1), excludes(2)))
+    assertThat(nonTypeExcludes.size(), is(0))
   }
 }

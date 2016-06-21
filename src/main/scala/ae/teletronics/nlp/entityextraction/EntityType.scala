@@ -8,4 +8,6 @@ object EntityType {
   val Location = "Location"
   val Organization = "Organization"
   val GeoPoliticalEntity = "Gpe" // e.g. city, state/province, and country.
+
+  val allEntityTypes = List(Person, Location, Organization, GeoPoliticalEntity)
 }

@@ -7,7 +7,7 @@ class DefaultExcludeListPersister extends ExcludeListPersister {
 
   import scala.collection.JavaConversions._
 
-  override def getExcludeList: java.util.List[String] = List[String]()
+  override def getExcludeList(entityType: String): java.util.List[String] = List[String]()
 
-  override def setExcludeList(list: java.util.List[String]): Unit = return
+  override def setExcludeList(entityType: String, list: java.util.List[String]): Unit = return
 }
