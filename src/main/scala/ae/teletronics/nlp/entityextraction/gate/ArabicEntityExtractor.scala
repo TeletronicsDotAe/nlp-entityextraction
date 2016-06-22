@@ -4,6 +4,8 @@ package ae.teletronics.nlp.entityextraction.gate
   * Created by Boris on 2016-04-18.
   */
 
+import java.io.File
+
 import ae.teletronics.nlp.entityextraction.exclusion.{DefaultExcludeListPersister, ExcludeListPersister}
 import ae.teletronics.nlp.entityextraction.gate.GateEntityType._
 import ae.teletronics.nlp.entityextraction.model.Entities
@@ -14,7 +16,7 @@ import gate.util.persistence.PersistenceManager
 import scala.collection.JavaConversions._
 
 object ArabicEntityExtractor {
-  val modelName = "conf/gate-8.2/plugins/Lang_Arabic/resources/arabic.gapp"
+  val model = findModel()
 
   // initialize Gate
   Gate.runInSandbox(true)
@@ -22,17 +24,29 @@ object ArabicEntityExtractor {
 
   val corpusController: CorpusController =
     PersistenceManager
-      .loadObjectFromFile(new java.io.File(ArabicEntityExtractor.modelName))
+      .loadObjectFromFile(model)
       .asInstanceOf[CorpusController]
+
+  private def findModel(): File = {
+    val root = "gate-8.2/plugins/Lang_Arabic/resources/arabic.gapp"
+    val locations = List("root", "conf/" + root, "src/main/resources/" + root) // this should be configurable from out side
+    val foundModel = locations
+      .map(new File(_))
+      .find(_.exists())
+
+    if (foundModel.isEmpty) {
+      throw new IllegalStateException("Cannot find the Gate model from: " + new File(".").getAbsolutePath)
+    }
+
+    foundModel.get
+  }
 }
 
-class ArabicEntityExtractor(excludePersister: ExcludeListPersister = new DefaultExcludeListPersister)
-  extends EntityExtractor {
+class ArabicEntityExtractor(excludePersister: ExcludeListPersister = new DefaultExcludeListPersister) extends EntityExtractor {
   import ArabicEntityExtractor.corpusController
 
-
   override def recognize(text: String): Entities = {
-    val x = ArabicEntityExtractor.modelName // instantiate this
+    val m = ArabicEntityExtractor.model // instantiate this
     val corpus: Corpus = Factory.newCorpus("corpus")
     corpus.add(Factory.newDocument(text))
 
