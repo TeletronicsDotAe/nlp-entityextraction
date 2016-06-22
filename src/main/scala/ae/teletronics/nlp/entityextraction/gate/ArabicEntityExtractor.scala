@@ -5,9 +5,9 @@ package ae.teletronics.nlp.entityextraction.gate
   */
 
 import ae.teletronics.nlp.entityextraction.exclusion.{DefaultExcludeListPersister, ExcludeListPersister}
-import ae.teletronics.nlp.entityextraction.gate.GateEntityType._
 import ae.teletronics.nlp.entityextraction.model.Entities
-import ae.teletronics.nlp.entityextraction.EntityExtractor
+import ae.teletronics.nlp.entityextraction.{Person, Location, Organization, EntityType, EntityExtractor}
+import ae.teletronics.nlp.entityextraction.EntityType._
 import gate._
 import gate.util.persistence.PersistenceManager
 
@@ -43,16 +43,23 @@ class ArabicEntityExtractor(excludePersister: ExcludeListPersister = new Default
   }
 
   private def extractEntities(annotations: AnnotationSet, text: String): Entities = {
-    val excludes: Map[String, List[String]] = allEntityTypes.map(e => e -> excludePersister.getExcludeList(e)).toMap
-    val entities: Iterable[Annotation] = annotations.get(allEntityTypes.toSet).toIterable
+    val excludes: Map[EntityType, Set[String]] = excludePersister.getAllExcludes
 
-    val res = entities
-      .map(e => (e.getType, getEntity(text, e)))
+    // The Gate Arabic entity extractor also supports the keyword "Gpe" for geopolitical entity, e.g. city, state/province, and country,
+    // but the Entities return type only supports the three classes that are in the intersection of the Gate and Stanford entities,
+    val toGateName: Map[EntityType, String] = Map(Person -> "Person", Location -> "Location", Organization -> "Organization")
+
+    val toEntityType: Map[String, EntityType] = toGateName.map(_.swap)
+
+    val entityAnnotations: Iterable[Annotation] = annotations.get(allEntityTypes.map(toGateName).toSet).toIterable
+
+    val res = entityAnnotations
+      .map(a => (a.getType, getEntity(text, a)))
       .groupBy(_._1)
-      .map { case (k, v) => (k, v.map(_._2).filter(e => !excludes(k).contains(e)).toList) }
+      .map { case (k, v) => (k, v.map(_._2).filter(e => !excludes(toEntityType(k)).contains(e))) }
       .withDefaultValue(List())
 
-    Entities(res(Person), res(Location), res(Organization))
+    Entities(res(toGateName(Person)).toList, res(toGateName(Location)).toList, res(toGateName(Organization)).toList)
   }
 
   private def getEntity(text: String, a: Annotation): String = {

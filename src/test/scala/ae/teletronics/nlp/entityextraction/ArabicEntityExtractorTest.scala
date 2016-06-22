@@ -5,7 +5,8 @@ package ae.teletronics.nlp.entityextraction
   */
 
 import ae.teletronics.nlp.entityextraction.exclusion.FlatFileExcludeListPersister
-import ae.teletronics.nlp.entityextraction.gate.{ArabicEntityExtractor, GateEntityType}
+import ae.teletronics.nlp.entityextraction.gate.ArabicEntityExtractor
+import ae.teletronics.nlp.entityextraction.{Person,Location,Organization,EntityType}
 import ae.teletronics.nlp.entityextraction.model.Entities
 import org.hamcrest.Matchers._
 import org.junit.Assert.assertThat
@@ -69,7 +70,7 @@ class ArabicEntityExtractorTest {
     val excludeFileName = "arabicTest"
 
     val excluder = new FlatFileExcludeListPersister(excludeFileName)
-    excluder.setExcludeList(GateEntityType.Person, List(person))
+    excluder.setExcludeSet(Person, Set(person))
 
     val postSubj = new ArabicEntityExtractor(excluder)
     val postResult = postSubj.recognize(text)
