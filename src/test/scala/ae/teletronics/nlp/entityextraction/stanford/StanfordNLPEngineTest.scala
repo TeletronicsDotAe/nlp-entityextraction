@@ -10,6 +10,24 @@ class StanfordNLPEngineTest {
   private val underTest = new StanfordNLPEngine
 
   @Test
+  def testOneWordSentence() = {
+    val text = "Hello"
+    val entities = underTest.recognize(text)
+    assertEquals(0, entities.persons.size)
+    assertEquals(0, entities.organisations.size)
+    assertEquals(0, entities.locations.size)
+  }
+
+  @Test
+  def testThreeWordSentence() = {
+    val text = "Hello Keanu Reeves"
+    val entities = underTest.recognize(text)
+    assertEquals(1, entities.persons.size)
+    assertEquals(0, entities.organisations.size)
+    assertEquals(0, entities.locations.size)
+  }
+
+  @Test
   def testFirstLastNameAsOne() = {
     val keanu = "Keanu Charles Reeves"
     val matrixSummary = s"Neo (${keanu}) believes that Morpheus (Laurence Fishburne), " +
@@ -17,7 +35,7 @@ class StanfordNLPEngineTest {
       s"What is the Matrix? Neo is contacted by Trinity (Carrie-Anne Moss), " +
       s"a beautiful stranger who leads him into an underworld where he meets Morpheus."
 
-    val entities = underTest.process(matrixSummary)
+    val entities = underTest.recognize(matrixSummary)
     assertEquals(keanu, entities.persons.head)
   }
 

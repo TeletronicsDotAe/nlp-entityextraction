@@ -4,10 +4,14 @@ package ae.teletronics.nlp.entityextraction
   * Created by Boris on 2016-04-18.
   */
 
-import org.junit._
-import Assert.assertThat
+import ae.teletronics.nlp.entityextraction.exclusion.FlatFileExcludeListPersister
+import ae.teletronics.nlp.entityextraction.gate.{ArabicEntityExtractor, GateEntityType}
+import ae.teletronics.nlp.entityextraction.model.Entities
 import org.hamcrest.Matchers._
-import scala.collection.JavaConversions._
+import org.junit.Assert.assertThat
+import org.junit._
+
+import scala.collection.JavaConverters._
 
 @Ignore
 @Test
@@ -18,9 +22,9 @@ class ArabicEntityExtractorTest {
     val subj = new ArabicEntityExtractor
     val result = subj.recognize("")
 
-    assertThat(result(EntityType.Person).length, is(0))
-    assertThat(result(EntityType.Location).length, is(0))
-    assertThat(result(EntityType.Organization).length, is(0))
+    assertThat(result.persons.length, is(0))
+    assertThat(result.locations.length, is(0))
+    assertThat(result.organisations.length, is(0))
   }
 
   @Test
@@ -39,14 +43,15 @@ class ArabicEntityExtractorTest {
     val person = "ياسر عرفات"
     val location = "رام الله"
     val organization = "الجيش الإسرائيلي"
-    assertThat(result(EntityType.Person).length, is(1))
-    assertThat(result(EntityType.Person), contains(person))
+    assertThat(result.persons.length, is(1))
 
-    assertThat(result(EntityType.Location).length, is(1))
-    assertThat(result(EntityType.Location), contains(location))
+    assertThat(result.persons.asJava, contains(person))
 
-    assertThat(result(EntityType.Organization).length, is(1))
-    assertThat(result(EntityType.Organization), contains(organization))
+    assertThat(result.locations.length, is(1))
+    assertThat(result.locations.asJava, contains(location))
+
+    assertThat(result.organisations.length, is(1))
+    assertThat(result.organisations.asJava, contains(organization))
   }
 
   @Test
@@ -58,21 +63,21 @@ class ArabicEntityExtractorTest {
 
     val preSubj = new ArabicEntityExtractor
     val preResult = preSubj.recognize(text)
-    assertThat(preResult(EntityType.Person).size(), is(1))
-    assertThat(preResult(EntityType.Person), containsInAnyOrder(person))
+    assertThat(preResult.persons.length, is(1))
+    assertThat(preResult.persons.asJava, containsInAnyOrder(person))
 
     val excludeFileName = "arabicTest"
 
     val excluder = new FlatFileExcludeListPersister(excludeFileName)
-    excluder.setExcludeList(EntityType.Person, List(person))
+    excluder.setExcludeList(GateEntityType.Person, List(person))
 
     val postSubj = new ArabicEntityExtractor(excluder)
     val postResult = postSubj.recognize(text)
 
-    import java.nio.file.{Paths, Files}
+    import java.nio.file.{Files, Paths}
     Files.deleteIfExists(Paths.get(excludeFileName))
 
-    assertThat(postResult(EntityType.Person).size, is(0))
+    assertThat(postResult.persons.size, is(0))
   }
 
   @Test
@@ -89,14 +94,14 @@ class ArabicEntityExtractorTest {
 
     println(result)
 
-    assertThat(result(EntityType.Person).length, is(1))
-    assertThat(result(EntityType.Person), contains(ghaith))
+    assertThat(result.persons.length, is(1))
+    assertThat(result.persons.asJava, contains(ghaith))
 
-    assertThat(result(EntityType.Location).length, is(1))
-    assertThat(result(EntityType.Location), contains(dubai))
+    assertThat(result.locations.length, is(1))
+    assertThat(result.locations.asJava, contains(dubai))
 
-    assertThat(result(EntityType.Organization).length, is(1))
-    assertThat(result(EntityType.Organization), contains(teletronics))
+    assertThat(result.organisations.length, is(1))
+    assertThat(result.organisations.asJava, contains(teletronics))
   }
 
   @Test
@@ -107,18 +112,6 @@ class ArabicEntityExtractorTest {
     val testcases = TestCaseReader.readAQMARCorpTestCases
     val results = testcases.map(tc => subj.recognize(tc.sentence)).toArray
 
-    def isCorrect(tpl: (TestCase, java.util.Map[String, java.util.List[String]])): Boolean = {
-      val (testCase, result) = tpl
-      result(EntityType.Person).toSet == testCase.persons.toSet && result(EntityType.Location).toSet == testCase.locations.toSet && result(EntityType.Organization).toSet == testCase.organizations.toSet
-    }
-
-    def isEmpty(testCase: TestCase): Boolean = {
-      testCase match {
-        case TestCase(_, Nil, Nil, Nil) => true
-        case _ => false
-      }
-    }
-
     println(testcases.length)
     println(testcases.zip(results).count(isCorrect))
     println(testcases.zip(results).count(tpl => isCorrect(tpl) && !isEmpty(tpl._1)))
@@ -126,9 +119,9 @@ class ArabicEntityExtractorTest {
     println("++++++++++++++++++++++ BEGIN examples ++++++++++++++++++++++++")
 
     for ((testCase, result) <- testcases.zip(results).filter(tpl => !isCorrect(tpl)).take(10)) {
-      val persons = result(EntityType.Person).toSet
-      val locations = result(EntityType.Location).toSet
-      val organizations = result(EntityType.Organization).toSet
+      val persons = result.persons.toSet
+      val locations = result.locations.toSet
+      val organizations = result.organisations.toSet
 
       val correctPersons = testCase.persons.toSet
       val correctLocations = testCase.locations.toSet
@@ -145,9 +138,11 @@ class ArabicEntityExtractorTest {
       println("  found organizations:   " + organizations.toString)
     }
 
-    case class CustomEqualsString(val string: String) {
-      override def toString  = string
+    case class CustomEqualsString(string: String) {
+      override def toString = string
+
       override def hashCode = string.hashCode
+
       override def equals(o: Any) = o match {
         case that: CustomEqualsString => {
           val thoseWords = that.string.split(' ').toSet
@@ -188,13 +183,13 @@ class ArabicEntityExtractorTest {
     }
 
     val correctPersons = testcases.map(tc => tc.persons.map(CustomEqualsString).toSet)
-    val resultPersons = results.map(r => r(EntityType.Person).map(CustomEqualsString).toSet).toList
+    val resultPersons = results.map(r => r.persons.map(CustomEqualsString).toSet).toList
 
     val correctLocations = testcases.map(tc => tc.locations.map(CustomEqualsString).toSet)
-    val resultLocations = results.map(r => r(EntityType.Location).map(CustomEqualsString).toSet).toList
+    val resultLocations = results.map(r => r.locations.map(CustomEqualsString).toSet).toList
 
     val correctOrganizations = testcases.map(tc => tc.organizations.map(CustomEqualsString).toSet)
-    val resultOrganizations = results.map(r => r(EntityType.Organization).map(CustomEqualsString).toSet).toList
+    val resultOrganizations = results.map(r => r.organisations.map(CustomEqualsString).toSet).toList
 
     val allCorrectEntities = correctPersons ++ correctLocations ++ correctOrganizations
     val allResultEntities = resultPersons ++ resultLocations ++ resultOrganizations
@@ -206,4 +201,21 @@ class ArabicEntityExtractorTest {
 
     assertThat(0, is(0))
   }
+
+  private def isCorrect(tpl: (TestCase, Entities)): Boolean = {
+    val (testCase, result) = tpl
+
+    (result.persons.toSet == testCase.persons.toSet
+      && result.locations.toSet == testCase.locations.toSet
+      && result.organisations.toSet == testCase.organizations.toSet)
+  }
+
+  private def isEmpty(testCase: TestCase): Boolean = {
+    testCase match {
+      case TestCase(_, Nil, Nil, Nil) => true
+      case _ => false
+    }
+  }
+
+
 }

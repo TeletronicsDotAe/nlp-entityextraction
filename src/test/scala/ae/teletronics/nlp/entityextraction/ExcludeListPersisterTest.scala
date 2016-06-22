@@ -7,7 +7,10 @@ package ae.teletronics.nlp.entityextraction
 
 import org.junit._
 import Assert.assertThat
+import ae.teletronics.nlp.entityextraction.exclusion.FlatFileExcludeListPersister
+import ae.teletronics.nlp.entityextraction.gate.GateEntityType
 import org.hamcrest.Matchers._
+
 import scala.collection.JavaConversions._
 
 @Test
@@ -27,9 +30,9 @@ class ExcludeListPersisterTest {
 
     val subj = new FlatFileExcludeListPersister(filename)
 
-    subj.setExcludeList(EntityType.Location, lines)
-    val excludes = subj.getExcludeList(EntityType.Location)
-    val nonTypeExcludes = subj.getExcludeList(EntityType.Organization)
+    subj.setExcludeList(GateEntityType.Location, lines)
+    val excludes = subj.getExcludeList(GateEntityType.Location)
+    val nonTypeExcludes = subj.getExcludeList(GateEntityType.Organization)
     Files.deleteIfExists(Paths.get(filename))
 
     assertThat(excludes.length, is(lines.length))

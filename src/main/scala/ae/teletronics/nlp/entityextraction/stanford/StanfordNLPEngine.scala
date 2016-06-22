@@ -1,6 +1,8 @@
 package ae.teletronics.nlp.entityextraction.stanford
 
+import ae.teletronics.nlp.entityextraction.EntityExtractor
 import ae.teletronics.nlp.entityextraction.model.Entities
+import ae.teletronics.nlp.entityextraction.stanford.StanfordEntityType._
 import edu.stanford.nlp.ie.crf.CRFClassifier
 import edu.stanford.nlp.ling.{CoreAnnotations, CoreLabel}
 
@@ -12,17 +14,19 @@ object StanfordNLPEngine {
   private lazy val classifier = CRFClassifier.getClassifier(serializedClassifier)
 }
 
-class StanfordNLPEngine {
+class StanfordNLPEngine extends EntityExtractor {
 
   import StanfordNLPEngine.classifier
 
-  def process(text: String): Entities = {
+  def recognize(text: String): Entities = {
     val llcl: java.util.List[java.util.List[CoreLabel]] = classifier.classify(text)
 
     val entities: Map[String, List[String]] = llcl
       .flatMap(_.map(word => (word.get(classOf[CoreAnnotations.AnswerAnnotation]), word.word())))
       .sliding(2) // must concat names of same category in sequence
-      .foldLeft(Map[String, List[String]]()) { case (acc, mutable.Buffer((cat1, word1), (cat2, word2))) =>
+      .foldLeft(Map[String, List[String]]()) { case (acc, buf) => {
+        val (cat1, word1) = buf(0)
+        val (cat2, word2) = if (buf.size > 1) buf(1) else ("", "")
         if (accept(cat1)) { // found an entity
           val name = if (cat2.equals(cat1)) word1 + " " + word2 else word1
 
@@ -36,14 +40,10 @@ class StanfordNLPEngine {
           acc + (cat1 -> newCatNames)
         } else {
           acc
-        }
-      }
-      .withDefaultValue[List[String]](List[String]())
+        }}}
+      .withDefaultValue(List())
 
-    Entities(entities("PERSON"), entities("LOCATION"), entities("ORGANIZATION"))
+    Entities(entities(Person), entities(Location), entities(Organization))
   }
 
-  private def accept(category: String): Boolean = {
-    category == "PERSON" || category == "ORGANIZATION" || category == "LOCATION"
-  }
 }
