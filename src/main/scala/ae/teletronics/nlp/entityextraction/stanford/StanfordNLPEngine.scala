@@ -1,13 +1,12 @@
 package ae.teletronics.nlp.entityextraction.stanford
 
+import ae.teletronics.nlp.entityextraction.{Person,Location,Organization,EntityType}
 import ae.teletronics.nlp.entityextraction.EntityExtractor
 import ae.teletronics.nlp.entityextraction.model.Entities
-import ae.teletronics.nlp.entityextraction.stanford.StanfordEntityType._
 import edu.stanford.nlp.ie.crf.CRFClassifier
 import edu.stanford.nlp.ling.{CoreAnnotations, CoreLabel}
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable
 
 object StanfordNLPEngine {
   private lazy val serializedClassifier = "stanford/english.all.3class.distsim.crf.ser.gz"
@@ -20,6 +19,12 @@ class StanfordNLPEngine extends EntityExtractor {
 
   def recognize(text: String): Entities = {
     val llcl: java.util.List[java.util.List[CoreLabel]] = classifier.classify(text)
+
+    val toStanfordName: Map[EntityType, String] = Map(Person -> "PERSON", Location -> "LOCATION", Organization -> "ORGANIZATION")
+
+    val toEntityType: Map[String, EntityType] = toStanfordName.map(_.swap)
+
+    def accept(entityType: String) = toEntityType.containsKey(entityType)
 
     val entities: Map[String, List[String]] = llcl
       .flatMap(_.map(word => (word.get(classOf[CoreAnnotations.AnswerAnnotation]), word.word())))
@@ -43,7 +48,7 @@ class StanfordNLPEngine extends EntityExtractor {
         }}}
       .withDefaultValue(List())
 
-    Entities(entities(Person), entities(Location), entities(Organization))
+    Entities(entities(toStanfordName(Person)), entities(toStanfordName(Location)), entities(toStanfordName(Organization)))
   }
 
 }
