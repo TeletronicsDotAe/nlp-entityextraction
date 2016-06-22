@@ -32,6 +32,7 @@ class ArabicEntityExtractor(excludePersister: ExcludeListPersister = new Default
 
 
   override def recognize(text: String): Entities = {
+    val x = ArabicEntityExtractor.modelName // instantiate this
     val corpus: Corpus = Factory.newCorpus("corpus")
     corpus.add(Factory.newDocument(text))
 
