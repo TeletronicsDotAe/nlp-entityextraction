@@ -1,6 +1,6 @@
 package ae.teletronics.nlp.entityextraction.exclusion
 
-import java.io.{BufferedWriter, File, FileWriter}
+import java.io._
 import java.nio.charset.Charset
 import java.nio.file.{Files, Paths}
 
@@ -10,6 +10,8 @@ import ae.teletronics.nlp.entityextraction.{Person, Location, Organization, Enti
   * Created by Boris on 2016-05-03.
   */
 class FlatFileExcludeListPersister(private val exclusionLanguage: ExclusionLanguage) extends ExcludeListPersister {
+
+  private val utf8 = Charset.forName("UTF-8")
 
   private def toEntityName(entityType: EntityType) = {
     entityType match {
@@ -29,7 +31,7 @@ class FlatFileExcludeListPersister(private val exclusionLanguage: ExclusionLangu
     import scala.collection.JavaConverters._
 
     if (Files.exists(filename)) {
-      Files.readAllLines(filename, Charset.forName("UTF-8"))
+      Files.readAllLines(filename, utf8)
         .asScala
         .map(_.trim)
         .filter(_.nonEmpty)
@@ -40,7 +42,7 @@ class FlatFileExcludeListPersister(private val exclusionLanguage: ExclusionLangu
   }
 
   override def setExcludeSet(entityType: EntityType, set: Set[String]): Unit = {
-    val writer = new BufferedWriter(new FileWriter(new File(mkFilename(entityType))))
+    val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream((mkFilename(entityType))), utf8))
 
     for (entry <- set) {
       writer.write(entry)
