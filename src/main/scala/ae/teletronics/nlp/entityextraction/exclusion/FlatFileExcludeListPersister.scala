@@ -1,6 +1,7 @@
 package ae.teletronics.nlp.entityextraction.exclusion
 
 import java.io.{BufferedWriter, File, FileWriter}
+import java.nio.charset.Charset
 import java.nio.file.{Files, Paths}
 
 import ae.teletronics.nlp.entityextraction.{Person, Location, Organization, EntityType}
