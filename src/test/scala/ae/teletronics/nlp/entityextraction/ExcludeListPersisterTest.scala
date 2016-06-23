@@ -7,11 +7,8 @@ package ae.teletronics.nlp.entityextraction
 
 import org.junit._
 import Assert.assertThat
-import ae.teletronics.nlp.entityextraction.exclusion.FlatFileExcludeListPersister
-import ae.teletronics.nlp.entityextraction.{Person,Location,Organization,EntityType}
+import ae.teletronics.nlp.entityextraction.exclusion.{English, FlatFileExcludeListPersister, Arabic}
 import org.hamcrest.Matchers._
-
-import scala.collection.JavaConversions._
 
 @Test
 class ExcludeListPersisterTest {
@@ -22,18 +19,22 @@ class ExcludeListPersisterTest {
   def testReadWriteFilePersistence() = {
     import java.nio.file.{Paths, Files}
 
-    val filename = "arabicTest"
+    val lang = Arabic
+    val subj = new FlatFileExcludeListPersister(lang)
+    val entityType = Organization
+    val otherEntityType = Person
 
-    Files.deleteIfExists(Paths.get(filename))
+    Files.deleteIfExists(Paths.get(subj.mkFilename(entityType)))
+    Files.deleteIfExists(Paths.get(subj.mkFilename(otherEntityType)))
 
     val lines = List("A", "BB", "CCC")
 
-    val subj = new FlatFileExcludeListPersister(filename)
+    subj.setExcludeSet(entityType, lines.toSet)
+    val excludes = subj.getExcludeSet(entityType)
+    val nonTypeExcludes = subj.getExcludeSet(otherEntityType)
 
-    subj.setExcludeSet(Location, lines.toSet)
-    val excludes = subj.getExcludeSet(Location)
-    val nonTypeExcludes = subj.getExcludeSet(Organization)
-    Files.deleteIfExists(Paths.get(filename))
+    Files.deleteIfExists(Paths.get(subj.mkFilename(entityType)))
+    Files.deleteIfExists(Paths.get(subj.mkFilename(otherEntityType)))
 
     assertThat(excludes.size, is(lines.length))
     assertThat(lines.length, is(3))
@@ -42,5 +43,34 @@ class ExcludeListPersisterTest {
     val excludesList = excludes.toList
     assertThat(javaLines, containsInAnyOrder(excludesList(0), excludesList(1), excludesList(2)))
     assertThat(nonTypeExcludes.size, is(0))
+  }
+
+  @Test
+  def testExcludersLanguagesAreNotOverlapping() = {
+    import java.nio.file.{Paths, Files}
+
+    val arabic = Arabic
+    val english = English
+    val arabicExcluder1 = new FlatFileExcludeListPersister(arabic)
+    val arabicExcluder2 = new FlatFileExcludeListPersister(arabic)
+    val englishExcluder = new FlatFileExcludeListPersister(english)
+
+    val entityType = Location
+
+    Files.deleteIfExists(Paths.get(arabicExcluder1.mkFilename(entityType)))
+    Files.deleteIfExists(Paths.get(englishExcluder.mkFilename(entityType)))
+
+    val lines = List("A", "BB", "CCC")
+
+    arabicExcluder1.setExcludeSet(entityType, lines.toSet)
+
+    val persistedArabicExcludeSet = arabicExcluder2.getExcludeSet(entityType)
+    val persistedEnglishExcludeSet = englishExcluder.getExcludeSet(entityType)
+
+    Files.deleteIfExists(Paths.get(arabicExcluder1.mkFilename(entityType)))
+
+    assertThat(persistedArabicExcludeSet.size, is(3))
+    assertThat(persistedArabicExcludeSet.equals(lines.toSet), is(true))
+    assertThat(persistedEnglishExcludeSet.size, is(0))
   }
 }

@@ -9,9 +9,9 @@ import ae.teletronics.nlp.entityextraction.{Person, Location, Organization, Enti
 /**
   * Created by Boris on 2016-05-03.
   */
-class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPersister {
+class FlatFileExcludeListPersister(private val exclusionLanguage: ExclusionLanguage) extends ExcludeListPersister {
 
-  def toEntityName(entityType: EntityType) = {
+  private def toEntityName(entityType: EntityType) = {
     entityType match {
       case Person => "Person"
       case Location => "Location"
@@ -19,7 +19,7 @@ class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPers
     }
   }
 
-  def mkFilename(entityType: EntityType) = "exclude-list-" + toEntityName(entityType) + "-" + filenamePart + ".txt"
+  def mkFilename(entityType: EntityType) = "exclude-list-" + exclusionLanguage.toString + "-" + toEntityName(entityType) + ".txt"
 
   override def getAllExcludes(): Map[EntityType, Set[String]] = EntityType.allEntityTypes.map(et => et -> getExcludeSet(et)).toMap
 
@@ -50,7 +50,7 @@ class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPers
     writer.close()
   }
 
-  def addExclusion(entityType: EntityType, entity: String): Unit = setExcludeSet(entityType, getExcludeSet(entityType) + entity)
+  override def addExclusion(entityType: EntityType, entity: String): Unit = setExcludeSet(entityType, getExcludeSet(entityType) + entity)
 
-  def deleteExclusion(entityType: EntityType, entity: String): Unit = setExcludeSet(entityType, getExcludeSet(entityType) - entity)
+  override def deleteExclusion(entityType: EntityType, entity: String): Unit = setExcludeSet(entityType, getExcludeSet(entityType) - entity)
 }
