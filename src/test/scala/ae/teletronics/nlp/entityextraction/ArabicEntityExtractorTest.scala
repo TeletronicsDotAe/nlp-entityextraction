@@ -13,7 +13,6 @@ import org.junit._
 
 import scala.collection.JavaConverters._
 
-@Ignore
 @Test
 class ArabicEntityExtractorTest {
 
