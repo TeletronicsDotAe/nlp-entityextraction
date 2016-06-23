@@ -27,21 +27,19 @@ class ExcludeListPersisterTest {
     Files.deleteIfExists(Paths.get(subj.mkFilename(entityType)))
     Files.deleteIfExists(Paths.get(subj.mkFilename(otherEntityType)))
 
-    val lines = List("A", "BB", "CCC")
+    val lines = Set("A", "BB", "CCC")
 
-    subj.setExcludeSet(entityType, lines.toSet)
+    subj.setExcludeSet(entityType, lines)
     val excludes = subj.getExcludeSet(entityType)
     val nonTypeExcludes = subj.getExcludeSet(otherEntityType)
 
     Files.deleteIfExists(Paths.get(subj.mkFilename(entityType)))
     Files.deleteIfExists(Paths.get(subj.mkFilename(otherEntityType)))
 
-    assertThat(excludes.size, is(lines.length))
-    assertThat(lines.length, is(3))
+    assertThat(excludes.size, is(lines.size))
+    assertThat(lines.size, is(3))
 
-    val javaLines: java.util.List[String] = lines
-    val excludesList = excludes.toList
-    assertThat(javaLines, containsInAnyOrder(excludesList(0), excludesList(1), excludesList(2)))
+    assertThat(excludes.equals(lines), is(true))
     assertThat(nonTypeExcludes.size, is(0))
   }
 
@@ -60,9 +58,9 @@ class ExcludeListPersisterTest {
     Files.deleteIfExists(Paths.get(arabicExcluder1.mkFilename(entityType)))
     Files.deleteIfExists(Paths.get(englishExcluder.mkFilename(entityType)))
 
-    val lines = List("A", "BB", "CCC")
+    val lines = Set("A", "BB", "CCC")
 
-    arabicExcluder1.setExcludeSet(entityType, lines.toSet)
+    arabicExcluder1.setExcludeSet(entityType, lines)
 
     val persistedArabicExcludeSet = arabicExcluder2.getExcludeSet(entityType)
     val persistedEnglishExcludeSet = englishExcluder.getExcludeSet(entityType)
@@ -70,7 +68,70 @@ class ExcludeListPersisterTest {
     Files.deleteIfExists(Paths.get(arabicExcluder1.mkFilename(entityType)))
 
     assertThat(persistedArabicExcludeSet.size, is(3))
-    assertThat(persistedArabicExcludeSet.equals(lines.toSet), is(true))
+    assertThat(persistedArabicExcludeSet.equals(lines), is(true))
     assertThat(persistedEnglishExcludeSet.size, is(0))
+  }
+
+  @Test
+  def testAddAndRemoveSingleEntityExclusion() = {
+    import java.nio.file.{Paths, Files}
+
+    val arabic = Arabic
+    val entityType = Location
+    val subj = new FlatFileExcludeListPersister(arabic)
+
+    Files.deleteIfExists(Paths.get(subj.mkFilename(entityType)))
+
+    val lines1 = Set("A", "BB", "CCC")
+    val addee = "DDDD"
+    val subee = "BB"
+    val lines2 = lines1 + addee
+    val lines3 = lines2 - subee
+
+    subj.setExcludeSet(entityType, lines1)
+
+    val result1 = subj.getExcludeSet(entityType)
+
+    subj.addExclusion(entityType, addee)
+
+    val result2 = subj.getExcludeSet(entityType)
+
+    subj.deleteExclusion(entityType, subee)
+
+    val result3 = subj.getExcludeSet(entityType)
+
+    Files.deleteIfExists(Paths.get(subj.mkFilename(entityType)))
+
+    assertThat(lines1.equals(result1), is(true))
+    assertThat(lines2.equals(result2), is(true))
+    assertThat(lines3.equals(result3), is(true))
+  }
+
+  @Test
+  def testGetAllExcludes() = {
+    import java.nio.file.{Paths, Files}
+
+    val english = English
+    val subj = new FlatFileExcludeListPersister(english)
+
+    val persons = Set("P1", "P2")
+    val locations = Set("L1")
+
+    Files.deleteIfExists(Paths.get(subj.mkFilename(Person)))
+    Files.deleteIfExists(Paths.get(subj.mkFilename(Location)))
+
+    subj.setExcludeSet(Person, persons)
+    subj.setExcludeSet(Location, locations)
+
+    val excludeMap = subj.getAllExcludes()
+
+    Files.deleteIfExists(Paths.get(subj.mkFilename(Person)))
+    Files.deleteIfExists(Paths.get(subj.mkFilename(Location)))
+
+    assertThat(excludeMap(Person).size, is(persons.size))
+    assertThat(excludeMap(Person).equals(persons), is(true))
+    assertThat(excludeMap(Location).size, is(locations.size))
+    assertThat(excludeMap(Location).equals(locations), is(true))
+    assertThat(excludeMap(Organization).size, is(0))
   }
 }
