@@ -23,12 +23,13 @@ class FlatFileExcludeListPersister(filenamePart: String) extends ExcludeListPers
   override def getAllExcludes(): Map[EntityType, Set[String]] = EntityType.allEntityTypes.map(et => et -> getExcludeSet(et)).toMap
 
   override def getExcludeSet(entityType: EntityType): Set[String] = {
-    val filename = mkFilename(entityType)
+    val filename = Paths.get(mkFilename(entityType))
 
-    if (Files.exists(Paths.get(filename))) {
-      scala.io.Source
-        .fromFile(filename, "UTF-8")
-        .getLines
+    import scala.collection.JavaConverters._
+
+    if (Files.exists(filename)) {
+      Files.readAllLines(filename, Charset.forName("UTF-8"))
+        .asScala
         .map(_.trim)
         .filter(_.nonEmpty)
         .toSet
