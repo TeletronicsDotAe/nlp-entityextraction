@@ -137,6 +137,10 @@ class ExcludeListPersisterTest {
 
     persister.addExclusion(Person, "Alice")
     persister.addExclusion(Person, "Bob")
+
+    assertTrue(persister.isExcluded(Person, "Alice"))
+    assertTrue(persister.isExcluded(Person, "Bob"))
+    assertFalse(persister.isExcluded(Person, "Carol"))
     assertEquals(2, persister.getExcludeSet(Person).size)
     assertEquals(2, persister.getAllExcludes().values.map(_.size).sum)
   }

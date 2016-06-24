@@ -8,12 +8,11 @@ import scala.collection.JavaConversions._
 class DBExcludeListPersister(exclusionLanguage: ExclusionLanguage) extends ExcludeListPersister {
   val dbFile = s"exclude-list-$exclusionLanguage.db"
 
-  private def handleExclusions(entityType: EntityType)(action: java.util.Set[String] => Unit): Set[String] = {
+  private def handleExclusions[T](entityType: EntityType)(action: java.util.Set[String] => T): T = {
     val db = DBMaker.fileDB(dbFile).make
     val set = db.hashSet(entityType.toString, Serializer.STRING).createOrOpen()
     try {
       action(set)
-      set.toSet
     } finally {
       db.close()
     }
@@ -24,7 +23,7 @@ class DBExcludeListPersister(exclusionLanguage: ExclusionLanguage) extends Exclu
 
   override def addExclusion(entityType: EntityType, entity: String): Unit = handleExclusions(entityType)(_.add(entity))
 
-  override def getExcludeSet(entityType: EntityType): Set[String] = handleExclusions(entityType)(identity(_))
+  override def getExcludeSet(entityType: EntityType): Set[String] = handleExclusions(entityType)(_.toSet)
 
   override def deleteExclusion(entityType: EntityType, entity: String): Unit =
     handleExclusions(entityType)(_.remove(entity))
