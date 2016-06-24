@@ -26,6 +26,21 @@ class StanfordNLPEngine extends EntityExtractor {
 
     def accept(entityType: String) = toEntityType.containsKey(entityType)
 
+    def caseInsentiveUnique(entities: List[String]): List[String] = {
+      // groupby case insensitivity:
+      val groups = entities.groupBy(_.toLowerCase)
+
+      // select good string from group, e.g. initial uppercase words
+      def bestEntity(list: List[String]): String = {
+        if (!list.exists(_.charAt(0).isUpper))
+          list(0)
+        else
+          list.dropWhile(e => !e.charAt(0).isUpper)(0)
+      }
+
+      groups.values.map(bestEntity(_)).toList
+    }
+
     val entities: Map[String, List[String]] = llcl
       .flatMap(_.map(word => (word.get(classOf[CoreAnnotations.AnswerAnnotation]), word.word())))
       .sliding(2) // must concat names of same category in sequence
@@ -46,6 +61,7 @@ class StanfordNLPEngine extends EntityExtractor {
         } else {
           acc
         }}}
+      .mapValues(caseInsentiveUnique(_))
       .withDefaultValue(List())
 
     Entities(entities(toStanfordName(Person)), entities(toStanfordName(Location)), entities(toStanfordName(Organization)))
