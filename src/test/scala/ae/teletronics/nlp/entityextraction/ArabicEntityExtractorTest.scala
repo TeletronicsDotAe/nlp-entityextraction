@@ -4,7 +4,7 @@ package ae.teletronics.nlp.entityextraction
   * Created by Boris on 2016-04-18.
   */
 
-import ae.teletronics.nlp.entityextraction.exclusion.FlatFileExcludeListPersister
+import ae.teletronics.nlp.entityextraction.exclusion.{Arabic, FlatFileExcludeListPersister}
 import ae.teletronics.nlp.entityextraction.gate.ArabicEntityExtractor
 import ae.teletronics.nlp.entityextraction.model.Entities
 import org.hamcrest.Matchers._
@@ -65,16 +65,17 @@ class ArabicEntityExtractorTest {
     assertThat(preResult.persons.length, is(1))
     assertThat(preResult.persons.asJava, containsInAnyOrder(person))
 
-    val excludeFileName = "arabicTest"
+    val lang = Arabic
+    val entityType = Person
 
-    val excluder = new FlatFileExcludeListPersister(excludeFileName)
-    excluder.setExcludeSet(Person, Set(person))
+    val excluder = new FlatFileExcludeListPersister(lang)
+    excluder.setExcludeSet(entityType, Set(person))
 
     val postSubj = new ArabicEntityExtractor(excluder)
     val postResult = postSubj.recognize(text)
 
     import java.nio.file.{Files, Paths}
-    Files.deleteIfExists(Paths.get(excludeFileName))
+    Files.deleteIfExists(Paths.get(excluder.mkFilename(entityType)))
 
     assertThat(postResult.persons.size, is(0))
   }
