@@ -16,21 +16,19 @@ object StanfordNLPEngine {
   private val toEntityType: Map[String, EntityType] = toStanfordName.map(_.swap)
   private def accept(entityType: String) = toEntityType.containsKey(entityType)
 
-  private def caseInsentiveUnique(entities: List[String]): List[String] = {
-    // groupby case insensitivity:
-    val groups = entities.groupBy(_.toLowerCase)
-
-    // select good string from group, e.g. initial uppercase words
-    def bestEntity(list: List[String]): String = {
-      if (!list.exists(_.charAt(0).isUpper))
-        list(0)
-      else
-        list.dropWhile(e => !e.charAt(0).isUpper)(0)
-    }
-
-    groups.values.map(bestEntity(_)).toList
+  // The canonical representation of an entity is initial capitalization for each word, concatenated with a single space, e.g. "New York"
+  // This will ensure that when an entity is put in the entities result object, there will only be one representation,
+  // so different messages with e.g. "New York" and "new york" will count as having the same entity, and this will
+  // solve the problem in the GUI of showing "New York" and "new york" in for instance an entity cloud or a list.
+  // This approach has the drawback of converting e.g. "IBM" to "Ibm", but it is not easy to see a good solution that
+  // will keep "IBM" as "IBM", while at the same time counting "ibm" as the same entity.
+  private def canonicalEntity(nonCanonicalEntity: String): String = {
+    nonCanonicalEntity
+      .split(' ')
+      .filter(!_.isEmpty)
+      .map(_.toLowerCase.capitalize)
+      .mkString(" ")
   }
-
 }
 
 class StanfordNLPEngine extends EntityExtractor {
@@ -59,7 +57,7 @@ class StanfordNLPEngine extends EntityExtractor {
         } else {
           acc
         }}}
-      .mapValues(caseInsentiveUnique(_))
+      .mapValues(_.map(canonicalEntity(_)).toList)
       .withDefaultValue(List())
 
     Entities(entities(toStanfordName(Person)), entities(toStanfordName(Location)), entities(toStanfordName(Organization)))
