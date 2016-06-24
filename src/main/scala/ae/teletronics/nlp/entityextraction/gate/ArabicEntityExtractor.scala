@@ -46,8 +46,19 @@ class ArabicEntityExtractor(excluder: ExcludeListPersister = new DefaultExcludeL
   import ArabicEntityExtractor.corpusController
   // The Gate Arabic entity extractor also supports the keyword "Gpe" for geopolitical entity, e.g. city, state/province, and country,
   // but the Entities return type only supports the three classes that are in the intersection of the Gate and Stanford entities,
-  private val toGateName: Map[EntityType, String] = Map(Person -> "Person", Location -> "Location", Organization -> "Organization")
-  private val toEntityType: Map[String, EntityType] = toGateName.map(_.swap)
+  private val GatePerson = "Person"
+  private val GateLocation = "Location"
+  private val GateOrganization = "Organization"
+
+  private val gateEntities = Set(GatePerson, GateLocation, GateOrganization)
+  private def toEntityType(gateEntity: String): EntityType = {
+    gateEntity match {
+      case GatePerson => Person
+      case GateLocation => Location
+      case GateOrganization => Organization
+      case _ => throw new IllegalArgumentException("argument must be in " + gateEntities.toString + ", but was: " + gateEntity)
+    }
+  }
 
 
   override def recognize(text: String): Entities = {
@@ -63,19 +74,19 @@ class ArabicEntityExtractor(excluder: ExcludeListPersister = new DefaultExcludeL
 
   private def extractEntities(annotations: AnnotationSet, text: String): Entities = {
     val res = annotations
-      .get(toEntityType.keySet)
+      .get(gateEntities)
       .map(a => (a.getType, getEntity(text, a)))
+      .map { case (k, vs) => (toEntityType(k), vs)}
       .groupBy(_._1)
       .map { case (k, vs) => (k, vs.map(_._2)) }
       .map { case (k, vs) => filter(k, vs.toList) }
       .withDefaultValue(List())
 
-    Entities(res(toGateName(Person)), res(toGateName(Location)), res(toGateName(Organization)))
+    Entities(res(Person), res(Location), res(Organization))
   }
 
-  private def filter(k: String, vs:List[String]): (String, List[String]) = {
-    val t = toEntityType(k)
-    (k, vs.filter(!excluder.shouldExclude(t, _)))
+  private def filter(k: EntityType, vs:List[String]): (EntityType, List[String]) = {
+    (k, vs.filter(!excluder.shouldExclude(k, _)))
   }
 
   private def getEntity(text: String, a: Annotation): String = {

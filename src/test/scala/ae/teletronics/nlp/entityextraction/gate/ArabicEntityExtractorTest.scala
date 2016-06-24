@@ -1,12 +1,12 @@
-package ae.teletronics.nlp.entityextraction
+package ae.teletronics.nlp.entityextraction.gate
 
 /**
   * Created by Boris on 2016-04-18.
   */
 
 import ae.teletronics.nlp.entityextraction.exclusion.{Arabic, FlatFileExcludeListPersister}
-import ae.teletronics.nlp.entityextraction.gate.ArabicEntityExtractor
 import ae.teletronics.nlp.entityextraction.model.Entities
+import ae.teletronics.nlp.entityextraction.Person
 import org.hamcrest.Matchers._
 import org.junit.Assert.assertThat
 import org.junit._

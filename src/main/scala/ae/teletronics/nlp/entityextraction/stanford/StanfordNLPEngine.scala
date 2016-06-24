@@ -13,9 +13,20 @@ object StanfordNLPEngine {
   private lazy val serializedClassifier = "stanford/english.all.3class.distsim.crf.ser.gz"
   private lazy val classifier = CRFClassifier.getClassifier(serializedClassifier)
 
-  private val toStanfordName: Map[EntityType, String] = Map(Person -> "PERSON", Location -> "LOCATION", Organization -> "ORGANIZATION")
-  private val toEntityType: Map[String, EntityType] = toStanfordName.map(_.swap)
-  private def accept(entityType: String) = toEntityType.containsKey(entityType)
+  private val StanfordPerson = "PERSON"
+  private val StanfordLocation = "LOCATION"
+  private val StanfordOrganization = "ORGANIZATION"
+
+  private val StanfordEntities = Set(StanfordPerson, StanfordLocation, StanfordOrganization)
+  private def toEntityType(gateEntity: String): EntityType = {
+    gateEntity match {
+      case StanfordPerson => Person
+      case StanfordLocation => Location
+      case StanfordOrganization => Organization
+      case _ => throw new IllegalArgumentException("argument must be in " + StanfordEntities.toString + ", but was: " + gateEntity)
+    }
+  }
+  private def accept(entityType: String) = StanfordEntities.contains(entityType)
 
   // The canonical representation of an entity is initial capitalization for each word, concatenated with a single space, e.g. "New York"
   // This will ensure that when an entity is put in the entities result object, there will only be one representation,
@@ -24,11 +35,7 @@ object StanfordNLPEngine {
   // This approach has the drawback of converting e.g. "IBM" to "Ibm", but it is not easy to see a good solution that
   // will keep "IBM" as "IBM", while at the same time counting "ibm" as the same entity.
   private def canonicalEntity(nonCanonicalEntity: String): String = {
-    nonCanonicalEntity
-      .split(' ')
-      .filter(!_.isEmpty)
-      .map(_.toLowerCase.capitalize)
-      .mkString(" ")
+    nonCanonicalEntity.toLowerCase.capitalize
   }
 }
 
@@ -36,37 +43,37 @@ class StanfordNLPEngine(excluder: ExcludeListPersister = new DefaultExcludeListP
   import StanfordNLPEngine._
 
   def recognize(text: String): Entities = {
+    // a list of list of corelabels correspond to a text that can have multiple sentences
     val llcl: java.util.List[java.util.List[CoreLabel]] = classifier.classify(text)
 
-    val entities: Map[String, List[String]] = llcl
-      .flatMap(_.map(word => (word.get(classOf[CoreAnnotations.AnswerAnnotation]), word.word())))
-      .sliding(2) // must concat names of same category in sequence
-      .foldLeft(Map[String, List[String]]()) { case (acc, buf) => {
-        val (cat1, word1) = buf.head
-        val (cat2, word2) = if (buf.size > 1) buf(1) else ("", "")
-        if (accept(cat1)) { // found an entity
-          val name = if (cat2.equals(cat1)) word1 + " " + word2 else word1
-
-          val catNames = acc.getOrElse[List[String]](cat1, List())
-          val newCatNames: List[String] = if (catNames.lastOption.exists(_.contains(word1))) {
-            val newLast = catNames.last + (if (cat2.equals(cat1)) " " + word2 else "")
-            catNames.init :+ newLast
-          } else {
-            catNames :+ name
-          }
-          acc + (cat1 -> newCatNames)
-        } else {
-          acc
-        }}}
-      .mapValues(_.map(canonicalEntity(_)).toList)
-      .map { case (k, vs) => filter(k, vs.toList) }
+    val entities: Map[EntityType, List[String]] = llcl
+      .flatMap(groupEqualConsecutiveElements(_))
+      .filter(tpl => accept(tpl._1))
+      .map { case ( annotation, words ) => (toEntityType(annotation), words.map(canonicalEntity(_)).mkString(" ")) }
+      .filter { case (entityType, entity) => !excluder.shouldExclude(entityType, entity) }
+      .groupBy(_._1)
+      .mapValues(v => v.map(_._2).toList)
       .withDefaultValue(List())
 
-    Entities(entities(toStanfordName(Person)), entities(toStanfordName(Location)), entities(toStanfordName(Organization)))
+    Entities(entities(Person), entities(Location), entities(Organization))
   }
 
-  private def filter(k: String, vs:List[String]): (String, List[String]) = {
-    val t = toEntityType(k)
-    (k, vs.filter(!excluder.shouldExclude(t, _)))
+  // a list of corelabels correspond to a single sentence. Group those consecutive corelabels together that have the same AnswerAnnotation
+  // e.g. [('Person', 'firstName1'), ('Person', 'middleName1'), ('Person', 'lastName1'), ('Nothing', 'and'), ('Person', 'firstName2'), ('Person', 'lastName2'))]
+  // becomes
+  // [('Person', ['firstName1', 'middleName1', 'lastName1']), ('Nothing', ['and']), ('Person', ['firstName2', 'lastName2'])]
+  private def groupEqualConsecutiveElements(labels: java.util.List[CoreLabel]): List[(String, List[String])] = {
+    labels
+      .map(cl => (cl.get(classOf[CoreAnnotations.AnswerAnnotation]), cl.word()))
+      .foldLeft(List[(String, List[String])]()) { case (acc, (annotation, word)) =>
+        acc match {
+          case ((runningAnnotation, words) :: tuples) if (annotation == runningAnnotation) => (runningAnnotation, words :+ word) :: tuples
+          case tuples => (annotation, List(word)) :: tuples
+        }
+      }.reverse
+  }
+
+  private def filter(k: EntityType, vs:List[String]): (EntityType, List[String]) = {
+    (k, vs.filter(!excluder.shouldExclude(k, _)))
   }
 }

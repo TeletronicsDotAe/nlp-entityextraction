@@ -1,4 +1,4 @@
-package ae.teletronics.nlp.entityextraction
+package ae.teletronics.nlp.entityextraction.gate
 
 /**
   * Created by Boris on 2016-06-08.

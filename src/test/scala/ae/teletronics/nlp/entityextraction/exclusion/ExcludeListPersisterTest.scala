@@ -1,14 +1,14 @@
-package ae.teletronics.nlp.entityextraction
+package ae.teletronics.nlp.entityextraction.exclusion
 
 /**
   * Created by Boris on 2016-05-04.
   */
 
 
-import org.junit._
-import Assert.assertThat
-import ae.teletronics.nlp.entityextraction.exclusion.{English, FlatFileExcludeListPersister, Arabic}
+import ae.teletronics.nlp.entityextraction.{Location, Organization, Person}
 import org.hamcrest.Matchers._
+import org.junit.Assert.assertThat
+import org.junit._
 
 @Test
 class ExcludeListPersisterTest {
@@ -43,7 +43,7 @@ class ExcludeListPersisterTest {
 
   @Test
   def testExcludersLanguagesAreNotOverlapping() = {
-    import java.nio.file.{Paths, Files}
+    import java.nio.file.{Files, Paths}
 
     val arabic = Arabic
     val english = English
@@ -72,7 +72,7 @@ class ExcludeListPersisterTest {
 
   @Test
   def testAddAndRemoveSingleEntityExclusion() = {
-    import java.nio.file.{Paths, Files}
+    import java.nio.file.{Files, Paths}
 
     val arabic = Arabic
     val entityType = Location
@@ -107,7 +107,7 @@ class ExcludeListPersisterTest {
 
   @Test
   def testGetAllExcludes() = {
-    import java.nio.file.{Paths, Files}
+    import java.nio.file.{Files, Paths}
 
     val english = English
     val subj = new FlatFileExcludeListPersister(english)
