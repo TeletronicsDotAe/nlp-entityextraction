@@ -20,5 +20,5 @@ class DefaultExcludeListPersister extends ExcludeListPersister {
   override def deleteExclusion(entityType: EntityType, entity: String): Unit =
     throw new UnsupportedOperationException("Not implemented")
 
-  override def shouldExclude(t: EntityType, name: String): Boolean = true
+  override def shouldExclude(t: EntityType, name: String): Boolean = false
 }
