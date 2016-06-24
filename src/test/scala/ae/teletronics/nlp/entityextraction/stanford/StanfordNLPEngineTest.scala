@@ -1,5 +1,8 @@
 package ae.teletronics.nlp.entityextraction.stanford
 
+import ae.teletronics.nlp.entityextraction.Person
+import ae.teletronics.nlp.entityextraction.exclusion.{FlatFileExcludeListPersister, English}
+import ae.teletronics.nlp.entityextraction.gate.ArabicEntityExtractor
 import org.hamcrest.Matchers._
 import org.junit.{Ignore, Test, Assert}
 import org.junit.Assert._
@@ -41,6 +44,39 @@ class StanfordNLPEngineTest {
 
     Assert.assertThat(entities.persons.asJava, hasItem(keanu))
   }
+
+  @Test
+  def testFileExcludeListPersisterExclusion() = {
+    val text = "Hello Keanu Reeves"
+
+    // this would normally be detected as a person in the text, as per the testCorrectEntityExtraction unit test above
+    val keanu = "Keanu Reeves"
+
+    val preSubj = underTest
+    val preResult = preSubj.recognize(text)
+    assertThat(preResult.persons.length, is(1))
+    assertThat(preResult.persons.asJava, containsInAnyOrder(keanu))
+
+    val lang = English
+    val entityType = Person
+
+    val excluder = new FlatFileExcludeListPersister(lang)
+    excluder.setExcludeSet(entityType, Set(keanu))
+
+    val postSubj = new StanfordNLPEngine(excluder)
+    val postResult = postSubj.recognize(text)
+
+    excluder.deleteExclusion(entityType, keanu);
+    val postResult2 = postSubj.recognize(text)
+
+    import java.nio.file.{Files, Paths}
+    Files.deleteIfExists(Paths.get(excluder.mkFilename(entityType)))
+
+    assertThat(postResult.persons.size, is(0))
+    assertThat(postResult2.persons.size, is(1))
+    assertThat(postResult2.persons.asJava, containsInAnyOrder(keanu))
+  }
+
 
   @Test
   @Ignore("should test case insensitivity , but I cannot find a piece of text where the stanford entity recognizer will natively recognize both the lowercase and initial uppercase location")

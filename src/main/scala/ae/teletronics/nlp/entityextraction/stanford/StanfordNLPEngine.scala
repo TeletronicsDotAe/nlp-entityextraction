@@ -1,5 +1,6 @@
 package ae.teletronics.nlp.entityextraction.stanford
 
+import ae.teletronics.nlp.entityextraction.exclusion.{DefaultExcludeListPersister, ExcludeListPersister}
 import ae.teletronics.nlp.entityextraction.{Person,Location,Organization,EntityType}
 import ae.teletronics.nlp.entityextraction.EntityExtractor
 import ae.teletronics.nlp.entityextraction.model.Entities
@@ -31,7 +32,7 @@ object StanfordNLPEngine {
   }
 }
 
-class StanfordNLPEngine extends EntityExtractor {
+class StanfordNLPEngine(excluder: ExcludeListPersister = new DefaultExcludeListPersister) extends EntityExtractor {
   import StanfordNLPEngine._
 
   def recognize(text: String): Entities = {
@@ -58,9 +59,14 @@ class StanfordNLPEngine extends EntityExtractor {
           acc
         }}}
       .mapValues(_.map(canonicalEntity(_)).toList)
+      .map { case (k, vs) => filter(k, vs.toList) }
       .withDefaultValue(List())
 
     Entities(entities(toStanfordName(Person)), entities(toStanfordName(Location)), entities(toStanfordName(Organization)))
   }
 
+  private def filter(k: String, vs:List[String]): (String, List[String]) = {
+    val t = toEntityType(k)
+    (k, vs.filter(!excluder.shouldExclude(t, _)))
+  }
 }
