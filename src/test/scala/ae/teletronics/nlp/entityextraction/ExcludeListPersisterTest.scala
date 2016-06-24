@@ -5,13 +5,10 @@ package ae.teletronics.nlp.entityextraction
   */
 
 
-import org.junit._
-import Assert.assertThat
 import ae.teletronics.nlp.entityextraction.exclusion.FlatFileExcludeListPersister
-import ae.teletronics.nlp.entityextraction.{Person,Location,Organization,EntityType}
 import org.hamcrest.Matchers._
-
-import scala.collection.JavaConversions._
+import org.junit.Assert.assertThat
+import org.junit._
 
 @Test
 class ExcludeListPersisterTest {
@@ -20,7 +17,7 @@ class ExcludeListPersisterTest {
 
   @Test
   def testReadWriteFilePersistence() = {
-    import java.nio.file.{Paths, Files}
+    import java.nio.file.{Files, Paths}
 
     val filename = "arabicTest"
 

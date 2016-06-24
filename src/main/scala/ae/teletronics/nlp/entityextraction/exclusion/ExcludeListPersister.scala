@@ -6,6 +6,7 @@ import ae.teletronics.nlp.entityextraction.EntityType
   * Created by Boris on 2016-05-03.
   */
 trait ExcludeListPersister {
+  def shouldExclude(t: EntityType, name: String): Boolean
   def getAllExcludes(): Map[EntityType, Set[String]]
   def getExcludeSet(entityType: EntityType): Set[String]
   def setExcludeSet(entityType: EntityType, set: Set[String]): Unit

@@ -11,26 +11,24 @@ import scala.collection.JavaConversions._
 object StanfordNLPEngine {
   private lazy val serializedClassifier = "stanford/english.all.3class.distsim.crf.ser.gz"
   private lazy val classifier = CRFClassifier.getClassifier(serializedClassifier)
+
+  private val toStanfordName: Map[EntityType, String] = Map(Person -> "PERSON", Location -> "LOCATION", Organization -> "ORGANIZATION")
+  private val toEntityType: Map[String, EntityType] = toStanfordName.map(_.swap)
+  private def accept(entityType: String) = toEntityType.containsKey(entityType)
+
 }
 
 class StanfordNLPEngine extends EntityExtractor {
-
-  import StanfordNLPEngine.classifier
+  import StanfordNLPEngine._
 
   def recognize(text: String): Entities = {
     val llcl: java.util.List[java.util.List[CoreLabel]] = classifier.classify(text)
-
-    val toStanfordName: Map[EntityType, String] = Map(Person -> "PERSON", Location -> "LOCATION", Organization -> "ORGANIZATION")
-
-    val toEntityType: Map[String, EntityType] = toStanfordName.map(_.swap)
-
-    def accept(entityType: String) = toEntityType.containsKey(entityType)
 
     val entities: Map[String, List[String]] = llcl
       .flatMap(_.map(word => (word.get(classOf[CoreAnnotations.AnswerAnnotation]), word.word())))
       .sliding(2) // must concat names of same category in sequence
       .foldLeft(Map[String, List[String]]()) { case (acc, buf) => {
-        val (cat1, word1) = buf(0)
+        val (cat1, word1) = buf.head
         val (cat2, word2) = if (buf.size > 1) buf(1) else ("", "")
         if (accept(cat1)) { // found an entity
           val name = if (cat2.equals(cat1)) word1 + " " + word2 else word1

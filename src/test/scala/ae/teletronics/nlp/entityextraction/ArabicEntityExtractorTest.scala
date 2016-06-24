@@ -6,7 +6,6 @@ package ae.teletronics.nlp.entityextraction
 
 import ae.teletronics.nlp.entityextraction.exclusion.FlatFileExcludeListPersister
 import ae.teletronics.nlp.entityextraction.gate.ArabicEntityExtractor
-import ae.teletronics.nlp.entityextraction.{Person,Location,Organization,EntityType}
 import ae.teletronics.nlp.entityextraction.model.Entities
 import org.hamcrest.Matchers._
 import org.junit.Assert.assertThat
