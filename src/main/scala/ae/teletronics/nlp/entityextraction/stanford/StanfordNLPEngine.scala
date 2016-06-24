@@ -16,6 +16,21 @@ object StanfordNLPEngine {
   private val toEntityType: Map[String, EntityType] = toStanfordName.map(_.swap)
   private def accept(entityType: String) = toEntityType.containsKey(entityType)
 
+  private def caseInsentiveUnique(entities: List[String]): List[String] = {
+    // groupby case insensitivity:
+    val groups = entities.groupBy(_.toLowerCase)
+
+    // select good string from group, e.g. initial uppercase words
+    def bestEntity(list: List[String]): String = {
+      if (!list.exists(_.charAt(0).isUpper))
+        list(0)
+      else
+        list.dropWhile(e => !e.charAt(0).isUpper)(0)
+    }
+
+    groups.values.map(bestEntity(_)).toList
+  }
+
 }
 
 class StanfordNLPEngine extends EntityExtractor {
@@ -44,6 +59,7 @@ class StanfordNLPEngine extends EntityExtractor {
         } else {
           acc
         }}}
+      .mapValues(caseInsentiveUnique(_))
       .withDefaultValue(List())
 
     Entities(entities(toStanfordName(Person)), entities(toStanfordName(Location)), entities(toStanfordName(Organization)))

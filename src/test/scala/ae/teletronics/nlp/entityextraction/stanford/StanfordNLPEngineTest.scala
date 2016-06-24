@@ -1,7 +1,9 @@
 package ae.teletronics.nlp.entityextraction.stanford
 
-import org.junit.Test
-import org.junit.Assert.assertEquals
+import org.hamcrest.Matchers._
+import org.junit.{Ignore, Test, Assert}
+import org.junit.Assert._
+import scala.collection.JavaConverters._
 
 /**
   * Created by trym on 21-06-2016.
@@ -36,7 +38,17 @@ class StanfordNLPEngineTest {
       s"a beautiful stranger who leads him into an underworld where he meets Morpheus."
 
     val entities = underTest.recognize(matrixSummary)
-    assertEquals(keanu, entities.persons.head)
+
+    Assert.assertThat(entities.persons.asJava, hasItem(keanu))
   }
 
+  @Test
+  @Ignore("should test case insensitivity , but I cannot find a piece of text where the stanford entity recognizer will natively recognize both the lowercase and initial uppercase location")
+  def testEntityRecognitionIsCaseInsensitive() = {
+    val location = "Chicago"
+    val text = s"I went to ${location.toLowerCase}, it is such a lovely city. ${location} has many interesting sights"
+    val entities = underTest.recognize(text)
+    Assert.assertThat(entities.locations.size, is(1))
+    Assert.assertThat(entities.locations.asJava, hasItem(location))
+  }
 }
