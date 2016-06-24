@@ -10,7 +10,6 @@ import java.nio.file.{Files, Paths}
 
 import org.junit._
 import Assert._
-import ae.teletronics.nlp.entityextraction.exclusion.{Arabic, DBExcludeListPersister, English, FlatFileExcludeListPersister}
 import org.hamcrest.Matchers._
 import org.mapdb.{DBMaker, Serializer}
 import org.junit._
@@ -145,5 +144,6 @@ class ExcludeListPersisterTest {
     assertFalse(persister.isExcluded(Person, "Carol"))
     assertEquals(2, persister.getExcludeSet(Person).size)
     assertEquals(2, persister.getAllExcludes().values.map(_.size).sum)
+    Files.deleteIfExists(Paths.get(persister.dbFile))
   }
 }

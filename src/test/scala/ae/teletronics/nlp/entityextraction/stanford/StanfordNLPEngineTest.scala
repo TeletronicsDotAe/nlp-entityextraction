@@ -2,7 +2,6 @@ package ae.teletronics.nlp.entityextraction.stanford
 
 import ae.teletronics.nlp.entityextraction.Person
 import ae.teletronics.nlp.entityextraction.exclusion.{FlatFileExcludeListPersister, English}
-import ae.teletronics.nlp.entityextraction.gate.ArabicEntityExtractor
 import org.hamcrest.Matchers._
 import org.junit.{Ignore, Test, Assert}
 import org.junit.Assert._
