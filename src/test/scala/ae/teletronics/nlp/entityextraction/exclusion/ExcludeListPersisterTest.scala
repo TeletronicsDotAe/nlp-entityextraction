@@ -6,8 +6,13 @@ package ae.teletronics.nlp.entityextraction.exclusion
 
 
 import ae.teletronics.nlp.entityextraction.{Location, Organization, Person}
+import java.nio.file.{Files, Paths}
+
+import org.junit._
+import Assert._
+import ae.teletronics.nlp.entityextraction.exclusion.{Arabic, DBExcludeListPersister, English, FlatFileExcludeListPersister}
 import org.hamcrest.Matchers._
-import org.junit.Assert.assertThat
+import org.mapdb.{DBMaker, Serializer}
 import org.junit._
 
 @Test
@@ -15,8 +20,6 @@ class ExcludeListPersisterTest {
 
   @Test
   def testReadWriteFilePersistence() = {
-    import java.nio.file.{Files, Paths}
-
     val lang = Arabic
     val subj = new FlatFileExcludeListPersister(lang)
     val entityType = Organization
@@ -43,8 +46,6 @@ class ExcludeListPersisterTest {
 
   @Test
   def testExcludersLanguagesAreNotOverlapping() = {
-    import java.nio.file.{Files, Paths}
-
     val arabic = Arabic
     val english = English
     val arabicExcluder1 = new FlatFileExcludeListPersister(arabic)
@@ -72,8 +73,6 @@ class ExcludeListPersisterTest {
 
   @Test
   def testAddAndRemoveSingleEntityExclusion() = {
-    import java.nio.file.{Files, Paths}
-
     val arabic = Arabic
     val entityType = Location
     val subj = new FlatFileExcludeListPersister(arabic)
@@ -107,8 +106,6 @@ class ExcludeListPersisterTest {
 
   @Test
   def testGetAllExcludes() = {
-    import java.nio.file.{Files, Paths}
-
     val english = English
     val subj = new FlatFileExcludeListPersister(english)
 
@@ -131,5 +128,22 @@ class ExcludeListPersisterTest {
     assertThat(excludeMap(Location).size, is(locations.size))
     assertThat(excludeMap(Location).equals(locations), is(true))
     assertThat(excludeMap(Organization).size, is(0))
+  }
+
+  @Test
+  def testAddExclusionsToDb(): Unit = {
+    val persister = new DBExcludeListPersister(English)
+    Files.deleteIfExists(Paths.get(persister.dbFile))
+
+    assertTrue(persister.getAllExcludes().values.forall(_.isEmpty))
+
+    persister.addExclusion(Person, "Alice")
+    persister.addExclusion(Person, "Bob")
+
+    assertTrue(persister.isExcluded(Person, "Alice"))
+    assertTrue(persister.isExcluded(Person, "Bob"))
+    assertFalse(persister.isExcluded(Person, "Carol"))
+    assertEquals(2, persister.getExcludeSet(Person).size)
+    assertEquals(2, persister.getAllExcludes().values.map(_.size).sum)
   }
 }

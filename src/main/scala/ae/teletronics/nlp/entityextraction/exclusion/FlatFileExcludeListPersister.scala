@@ -49,7 +49,7 @@ class FlatFileExcludeListPersister(private val exclusionLanguage: ExclusionLangu
     setExcludeSet(entityType, getExcludeSet(entityType) - entity)
   }
 
-  override def shouldExclude(t: EntityType, name: String): Boolean = {
+  override def isExcluded(t: EntityType, name: String): Boolean = {
     getExcludeSet(t).contains(name)
   }
 

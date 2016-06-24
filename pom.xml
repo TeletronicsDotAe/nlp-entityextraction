@@ -55,6 +55,13 @@
       <version>3.6.0</version>
     </dependency>
 
+    <!-- Database -->
+    <dependency>
+      <groupId>org.mapdb</groupId>
+      <artifactId>mapdb</artifactId>
+      <version>3.0.0-M6</version>
+    </dependency>
+
     <!-- Test -->
     <dependency>
       <groupId>junit</groupId>

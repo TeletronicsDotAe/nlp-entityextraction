@@ -86,7 +86,7 @@ class ArabicEntityExtractor(excluder: ExcludeListPersister = new DefaultExcludeL
   }
 
   private def filter(k: EntityType, vs:List[String]): (EntityType, List[String]) = {
-    (k, vs.filter(!excluder.shouldExclude(k, _)))
+    (k, vs.filter(!excluder.isExcluded(k, _)))
   }
 
   private def getEntity(text: String, a: Annotation): String = {

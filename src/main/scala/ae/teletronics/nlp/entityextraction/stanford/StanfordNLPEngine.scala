@@ -50,7 +50,7 @@ class StanfordNLPEngine(excluder: ExcludeListPersister = new DefaultExcludeListP
       .flatMap(groupEqualConsecutiveElements(_))
       .filter(tpl => accept(tpl._1))
       .map { case ( annotation, words ) => (toEntityType(annotation), words.map(canonicalEntity(_)).mkString(" ")) }
-      .filter { case (entityType, entity) => !excluder.shouldExclude(entityType, entity) }
+      .filter { case (entityType, entity) => !excluder.isExcluded(entityType, entity) }
       .groupBy(_._1)
       .mapValues(v => v.map(_._2).toList)
       .withDefaultValue(List())
@@ -71,9 +71,5 @@ class StanfordNLPEngine(excluder: ExcludeListPersister = new DefaultExcludeListP
           case tuples => (annotation, List(word)) :: tuples
         }
       }.reverse
-  }
-
-  private def filter(k: EntityType, vs:List[String]): (EntityType, List[String]) = {
-    (k, vs.filter(!excluder.shouldExclude(k, _)))
   }
 }
