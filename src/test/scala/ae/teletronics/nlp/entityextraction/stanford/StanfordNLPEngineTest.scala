@@ -3,7 +3,7 @@ package ae.teletronics.nlp.entityextraction.stanford
 import ae.teletronics.nlp.entityextraction.Person
 import ae.teletronics.nlp.entityextraction.exclusion.{FlatFileExcludeListPersister, English}
 import org.hamcrest.Matchers._
-import org.junit.{Ignore, Test, Assert}
+import org.junit.{Test, Assert}
 import org.junit.Assert._
 import scala.collection.JavaConverters._
 
