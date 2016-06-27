@@ -65,25 +65,34 @@ class StanfordNLPEngineTest {
     val postSubj = new StanfordNLPEngine(excluder)
     val postResult = postSubj.recognize(text)
 
+    assertThat(postResult.persons.size, is(0))
+
     excluder.deleteExclusion(entityType, keanu);
     val postResult2 = postSubj.recognize(text)
 
     import java.nio.file.{Files, Paths}
     Files.deleteIfExists(Paths.get(excluder.mkFilename(entityType)))
 
-    assertThat(postResult.persons.size, is(0))
     assertThat(postResult2.persons.size, is(1))
     assertThat(postResult2.persons.asJava, containsInAnyOrder(keanu))
   }
 
 
   @Test
-  @Ignore("should test case insensitivity , but I cannot find a piece of text where the stanford entity recognizer will natively recognize both the lowercase and initial uppercase location")
-  def testEntityRecognitionIsCaseInsensitive() = {
-    val location = "Chicago"
-    val text = s"I went to ${location.toLowerCase}, it is such a lovely city. ${location} has many interesting sights"
+  def testEntityRecognitionHasCanonicalRepresentationForAllCapitalsEntity() = {
+    val organization = "IBM"
+    val text = s"I used to work at ${organization}, it is a large company."
     val entities = underTest.recognize(text)
-    Assert.assertThat(entities.locations.size, is(1))
-    Assert.assertThat(entities.locations.asJava, hasItem(location))
+    Assert.assertThat(entities.organisations.size, is(1))
+    Assert.assertThat(entities.organisations.asJava, hasItem(organization.toLowerCase().capitalize))
+  }
+
+  @Test
+  def testEntityRecognitionHasCanonicalRepresentationForLowercaseEntity() = {
+    val person = "jenny"
+    val text = s"${person} said to him that he should say hello."
+    val entities = underTest.recognize(text)
+    Assert.assertThat(entities.persons.size, is(1))
+    Assert.assertThat(entities.persons.asJava, hasItem(person.toLowerCase().capitalize))
   }
 }
