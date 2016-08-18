@@ -5,6 +5,12 @@ package ae.teletronics.nlp.entityextraction
   */
 object EntityType {
   val allEntityTypes = List(Person, Location, Organization)
+
+  def asType(value: String): EntityType = value match {
+    case "person" => Person
+    case "location" => Location
+    case "organization" => Organization
+  }
 }
 
 sealed trait EntityType
