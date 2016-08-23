@@ -4,7 +4,7 @@
   <parent>
     <groupId>ae.teletronics</groupId>
     <artifactId>godfather</artifactId>
-    <version>RELEASE</version>
+    <version>0.9</version>
   </parent>
 
   <groupId>ae.teletronics.nlp</groupId>
