@@ -33,8 +33,9 @@ build.log
 .CVS
 .hg*
 
-# excludeList file names
+# excludeList file and db names
 exclude-list-*.txt
+exclude-list-*.db
 
 # switch to regexp syntax.
 #  syntax: regexp

@@ -18,7 +18,7 @@ class XmlStreamReader(context: SparkContext, tokenizer: SimpleTokenizer) {
 
   def read(msgs: List[TrainMessage]): RDD[LabeledPoint] = {
     val messages = msgs.flatMap(t => {
-      val persons = engine.process(t.content).getPersons()
+      val persons = engine.recognize(t.content).getPersons()
       val contentAsTokens = tokenizer.tokenize("." + t.content)
       val tokenCount = contentAsTokens.length
       contentAsTokens

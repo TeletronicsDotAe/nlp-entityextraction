@@ -19,7 +19,7 @@ class StanfordToFromExtractorTest {
     val res = extractor.process(message)
     assertEquals(1, res.from.size)
     assertEquals("Bibob", res.from(0))
-    assertEquals("Bibob", res.from2String())
+    assertEquals("Bibob", res.from2String().get)
   }
 
   @Test
@@ -28,7 +28,7 @@ class StanfordToFromExtractorTest {
     val res = extractor.process(message)
     assertEquals(1, res.to.size)
     assertEquals("Peter", res.to(0))
-    assertEquals("Peter", res.to2String())
+    assertEquals("Peter", res.to2String().get)
   }
 
   @Test
