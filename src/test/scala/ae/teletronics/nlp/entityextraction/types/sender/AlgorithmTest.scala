@@ -1,6 +1,6 @@
 package ae.teletronics.nlp.entityextraction.types.sender
 
-import opennlp.tools.tokenize.SimpleTokenizer
+import edu.stanford.nlp.process.PTBTokenizer
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
@@ -23,12 +23,11 @@ class AlgorithmTest {
     Logger.getRootLogger().setLevel(Level.OFF);
     Logger.getLogger("org.apache.spark").setLevel(Level.OFF)
 
-    val tokenizer = SimpleTokenizer.INSTANCE
     val conf = new SparkConf().setAppName("Simple Application").setMaster("local")
     sc = new SparkContext(conf)
 
     val s = this.getClass.getClassLoader.getResourceAsStream("train/mailinglists.xml")
-    val streamReader = new XmlStreamReader(sc, tokenizer)
+    val streamReader = new XmlStreamReader(sc, PTBTokenizer.factory())
     data = streamReader.read(s)
   }
 
