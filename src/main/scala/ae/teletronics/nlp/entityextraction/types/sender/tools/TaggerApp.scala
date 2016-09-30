@@ -1,9 +1,9 @@
 package ae.teletronics.nlp.entityextraction.types.sender.tools
 
-import java.io.{BufferedWriter, FileOutputStream, OutputStreamWriter}
+import java.io.{BufferedWriter, FileOutputStream, OutputStreamWriter, StringReader}
 
 import ae.teletronics.nlp.entityextraction.types.sender.TrainMessage
-import opennlp.tools.tokenize.SimpleTokenizer
+import edu.stanford.nlp.process.PTBTokenizer
 
 import scala.io.{Source, StdIn}
 
@@ -12,7 +12,7 @@ import scala.io.{Source, StdIn}
   */
 object TaggerApp extends App {
 
-  private val tokenizer = SimpleTokenizer.INSTANCE
+  private val factory = PTBTokenizer.factory()
   private val outputFileName = args.head + ".xml"
   private val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFileName)))
 
@@ -36,11 +36,12 @@ object TaggerApp extends App {
       println(m)
       println
       println
+      import scala.collection.JavaConversions._
 
-      val tokens: Array[(String, Int)] = tokenizer.tokenize(m).zipWithIndex.map(s => {
-        print(s._1 + ":" + s._2 + " \n")
-        s
-      })
+      val tokens: List[(String, Int)] = factory.getTokenizer(new StringReader(m)).tokenize().zipWithIndex.map(s => {
+        print(s._1.word() + ":" + s._2 + " \n")
+        (s._1.word(), s._2)
+      }).toList
 
       println()
       val receiverPos = StdIn.readLine("Provide receiver token position (empty if none): ")
@@ -64,7 +65,7 @@ object TaggerApp extends App {
   println()
   println(s"Thank you for your input. The xml output file can be found at ${outputFileName}")
 
-  private def token(tokens: Array[(String, Int)], receiverPos: Int) =
+  private def token(tokens: List[(String, Int)], receiverPos: Int) =
     if (receiverPos < 0) None else Some(tokens(receiverPos)._1)
 
   private def getInputFileLines() = {
