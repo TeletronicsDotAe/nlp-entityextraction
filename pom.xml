@@ -9,7 +9,7 @@
 
     <groupId>ae.teletronics.nlp</groupId>
     <artifactId>entityextraction</artifactId>
-    <version>1.4</version>
+    <version>1.5-SNAPSHOT</version>
     <name>${project.artifactId}</name>
 
     <properties>
